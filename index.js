@@ -3,61 +3,100 @@
 
 // noinspection JSUnresolvedFunction
 const application = require("commander");
+// noinspection JSUnresolvedFunction
+const mysql = require('nodejs-mysql').default;
 
-const validateArguments = () => {
-    let hasError = false;
-    if (hostname === undefined) {
-        console.error('  Database hostname is required');
-        hasError = true;
+class IngoToZimbraRuleConverter {
+    initialiseApplication() {
+        this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
+
+        application.version('0.0.1')
+            .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
+            .arguments('<mailboxId>')
+            .option('-H, --database-host <host>', 'Database host (default localhost)')
+            .option('-P, --database-port <port>', 'Database port (default 3306)')
+            .option('-d, --database <database>', 'Database name (default horde)')
+            .option('-u, --database-user <user>', 'Database user name')
+            .option('-p, --database-password <password>', 'Database password')
+            .action(this.prepareToFetchMailboxData);
+
+        // noinspection JSUnresolvedVariable
+        application.parse(process.argv);
     }
 
-    if (databaseName === undefined) {
-        console.error('  Database name is required');
-        hasError = true;
+    initialiseConfiguration() {
+        this.config = {};
+
+        // noinspection JSUnresolvedVariable
+        this.config.host = application.databaseHost || 'localhost';
+        // noinspection JSUnresolvedVariable
+        this.config.port = application.databasePort || 3306;
+        // noinspection JSUnresolvedVariable
+        this.config.database = application.database || 'horde';
+        // noinspection JSUnresolvedVariable
+        this.config.user = application.databaseUser;
+        // noinspection JSUnresolvedVariable
+        this.config.password = application.databasePassword;
     }
 
-    if (username === undefined) {
-        console.error('  Database user is required');
-        hasError = true;
+    validateConfiguration() {
+        let hasError = false;
+        if (this.config.user === undefined) {
+            console.error('  Database user is required');
+            hasError = true;
+        }
+
+        if (this.config.password === undefined) {
+            console.error('  Database password is required');
+            hasError = true;
+        }
+
+        if (hasError) {
+            application.help();
+            this.exitWithErrorState();
+        }
     }
 
-    if (password === undefined) {
-        console.error('  Database password is required');
-        hasError = true;
+    initialiseDatabaseConnection() {
+        this.db = mysql.getInstance(this.config);
     }
 
-    if (hasError) {
-        application.help();
+    prepareToFetchMailboxData(mailboxId) {
+        this.initialiseConfiguration();
+        this.validateConfiguration();
+        this.initialiseDatabaseConnection();
+        this.fetchMailboxData(mailboxId)
+    }
 
-        // noinspection JSUnresolvedFunction, JSUnresolvedVariable
+    fetchMailboxData(mailboxId) {
+        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
+            'FROM horde_prefs ' +
+            'WHERE pref_uid = ? ' +
+            'AND pref_scope = ? ' +
+            'AND pref_name = ?';
+        // noinspection JSUnresolvedVariable
+        this.db.exec(query, [mailboxId, 'ingo', 'rules'])
+            .then(results => {
+                console.log(results);
+                this.exitWithNormalState();
+            })
+            .catch(e => {
+                console.log('Error while trying to fetch rules from database: ' + e);
+                this.exitWithErrorState();
+            });
+    }
+
+    exitWithNormalState() {
+        // noinspection JSUnresolvedVariable, JSUnresolvedFunction
+        process.exit(0);
+    }
+
+    exitWithErrorState() {
+        // noinspection JSUnresolvedVariable, JSUnresolvedFunction
         process.exit(1);
     }
-};
+}
 
-const configureApplication = () => {
-    application.version('0.0.1')
-        .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
-        .option('-H, --database-host <host>', 'Database host (with optional port)')
-        .option('-d, --database <database>', 'Database name')
-        .option('-u, --database-user <user>', 'Database user name')
-        .option('-p, --database-password <password>', 'Database password');
-};
-const parseArguments = () => {
-// noinspection JSUnresolvedVariable
-    application.parse(process.argv);
-// noinspection JSUnresolvedVariable
-    const hostname = application.databaseHost;
-// noinspection JSUnresolvedVariable
-    const databaseName = application.database;
-
-// noinspection JSUnresolvedVariable
-    const username = application.databaseUser;
-// noinspection JSUnresolvedVariable
-    const password = application.databasePassword;
-    return {hostname, databaseName, username, password};
-};
-
-configureApplication();
-const {hostname, databaseName, username, password} = parseArguments();
-validateArguments();
+const converter = new IngoToZimbraRuleConverter();
+converter.initialiseApplication();
 

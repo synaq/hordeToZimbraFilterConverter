@@ -7,7 +7,8 @@
   "author": "Willem Viljoen <willemv@synaq.com>",
   "license": "BSD-2-Clause",
   "dependencies": {
-    "commander": "^2.11.0"
+    "commander": "^2.11.0",
+    "nodejs-mysql": "^0.1.3"
   },
   "bin": {
     "ingo2zimbra": "./index.js"
