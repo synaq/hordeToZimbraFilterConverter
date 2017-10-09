@@ -1,5 +1,5 @@
 {
-  "name": "hordeToZimbraFilterConverter",
+  "name": "ingo2zimbra",
   "version": "0.0.1",
   "description": "Convert Horde / Ingo filter rules stored using the Horde preferences storage mechanism to a script which can be piped into the Zimbra zmprov command to allow importing of the rules.",
   "main": "index.js",
