@@ -172,9 +172,15 @@ class IngoToZimbraRuleConverter {
         }
 
         // noinspection JSUnresolvedVariable
-        if (rule.conditions === undefined || rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).length === 0)
-        {
+        if (rule.conditions === undefined || rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).length === 0) {
             this.writeToDebugLog(`# Skipping rule "${rule.name}" because it has no valid conditions`);
+
+            return false;
+        }
+
+        // noinspection JSUnresolvedVariable
+        if (rule.name === 'spam' && rule.combine === '1' && rule.conditions[0].field === 'X-Spam-Flag' && rule.conditions[0].match === 'contains' && rule.conditions[0].value === 'YES' && rule.action === '2' && rule['action-value'] === 'INBOX.spam') {
+            this.writeToDebugLog(`# Skipping redundant spam rule "${rule.name}"`);
 
             return false;
         }
@@ -187,10 +193,12 @@ class IngoToZimbraRuleConverter {
     };
 
     static conditionSubject(condition) {
-        // noinspection JSUnresolvedVariable
-        const fieldName = condition.field.toLowerCase();
+        const addressFields = ['from', 'to', 'cc'];
 
-        return `${['from', 'to', 'cc'].includes(fieldName) ? 'address' : 'header'} "${fieldName}" ${['from', 'to', 'cc'].includes(fieldName) ? 'all' : ''}`
+        // noinspection JSUnresolvedVariable
+        const fieldName = condition.field;
+
+        return `${addressFields.includes(fieldName.toLowerCase()) ? 'address' : 'header'} "${fieldName}" ${addressFields.includes(fieldName.toLowerCase()) ? 'all' : ''}`
     }
 
     conditionMatcher(condition) {
