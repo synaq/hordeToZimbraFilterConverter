@@ -146,7 +146,7 @@ class IngoToZimbraRuleConverter {
     }
 
     static fixBrokenSerializedData(results) {
-        return results[0].rules.replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${value.length}:"${value}";`);
+        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${value.length}:"${value}";`);
     }
 
     invalidRuleFilter(rule) {
