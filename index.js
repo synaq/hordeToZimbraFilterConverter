@@ -194,9 +194,14 @@ class IngoToZimbraRuleConverter {
 
     static conditionSubject(condition) {
         const addressFields = ['from', 'to', 'cc'];
+        const lowerCaseFields = ['subject'];
 
         // noinspection JSUnresolvedVariable
-        const fieldName = condition.field;
+        let fieldName = condition.field;
+
+        if (lowerCaseFields.includes(fieldName.toLowerCase())) {
+            fieldName = fieldName.toLowerCase();
+        }
 
         return `${addressFields.includes(fieldName.toLowerCase()) ? 'address' : 'header'} "${fieldName}" ${addressFields.includes(fieldName.toLowerCase()) ? 'all' : ''}`
     }
