@@ -92,6 +92,7 @@ class IngoToZimbraRuleConverter {
         this.actionMap.set('3', 'discard');
         this.actionMap.set('4', 'redirect');
         this.actionMap.set('5', 'keep redirect');
+        this.actionMap.set('6', 'discard');
         this.actionMap.set('11', 'keep fileinto');
         this.actionMap.set('12', 'flag');
 
