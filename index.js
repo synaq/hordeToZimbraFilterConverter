@@ -128,7 +128,7 @@ class IngoToZimbraRuleConverter {
                     });
 
                     // noinspection JSUnresolvedVariable
-                    process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} \n`);
+                    process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} ${rule.stop === '1' ? 'stop' : ''}\n`);
                 });
 
                 // noinspection JSUnresolvedVariable
@@ -179,7 +179,7 @@ class IngoToZimbraRuleConverter {
     };
 
     static actionValue(rule) {
-        return !['1', '3'].includes(rule.action) ? rule['action-value'] : '';
+        return !['1', '3'].includes(rule.action) ? `"${rule['action-value']}"` : '';
     }
 
     uniqueRuleName(ruleName) {
