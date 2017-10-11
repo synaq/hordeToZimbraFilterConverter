@@ -124,7 +124,7 @@ class IngoToZimbraRuleConverter {
                     // noinspection JSUnresolvedVariable
                     rule.conditions.forEach((condition) => {
                         // noinspection JSUnresolvedVariable
-                        conditionsString += `header "${condition.field.toLowerCase()}" ${condition.match} "${condition.value}" `
+                        conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${condition.match} "${condition.value}" `
                     });
 
                     // noinspection JSUnresolvedVariable
@@ -177,6 +177,13 @@ class IngoToZimbraRuleConverter {
 
         return true;
     };
+
+    static conditionSubject(condition) {
+        // noinspection JSUnresolvedVariable
+        const fieldName = condition.field.toLowerCase();
+
+        return `${['from', 'to', 'cc'].includes(fieldName) ? 'address' : 'header'} "${fieldName}" ${['from', 'to', 'cc'].includes(fieldName) ? 'all' : ''}`
+    }
 
     static actionValue(rule) {
         return !['1', '3'].includes(rule.action) ? `"${rule['action-value']}"` : '';
