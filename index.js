@@ -124,7 +124,7 @@ class IngoToZimbraRuleConverter {
                     // noinspection JSUnresolvedVariable
                     rule.conditions.forEach((condition) => {
                         // noinspection JSUnresolvedVariable
-                        conditionsString += `header "${condition.field.toLowerCase()}" all ${condition.match} "${condition.value}" `
+                        conditionsString += `header "${condition.field.toLowerCase()}" ${condition.match} "${condition.value}" `
                     });
 
                     // noinspection JSUnresolvedVariable
