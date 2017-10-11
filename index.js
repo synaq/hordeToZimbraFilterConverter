@@ -11,6 +11,7 @@ const phpSerializer = require("serialize-like-php");
 class IngoToZimbraRuleConverter {
     initialiseApplication() {
         this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
+        this.invalidRuleFilter = this.invalidRuleFilter.bind(this);
 
         application.version('0.0.1')
             .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
@@ -20,10 +21,26 @@ class IngoToZimbraRuleConverter {
             .option('-d, --database <database>', 'Database name (default horde)')
             .option('-u, --database-user <user>', 'Database user name')
             .option('-p, --database-password <password>', 'Database password')
+            .option('-d, --debug', 'Write warnings when skipping invalid or unwanted rules')
             .action(this.prepareToFetchMailboxData);
 
         // noinspection JSUnresolvedVariable
         application.parse(process.argv);
+    }
+
+    prepareToFetchMailboxData(mailbox) {
+        this.initialiseMailbox(mailbox);
+        this.initialiseConfiguration();
+        this.validateConfiguration();
+        this.initialiseDatabaseConnection();
+        this.initialiseMaps();
+        this.initialiseFlags();
+        this.fetchMailboxData();
+    }
+
+    initialiseMailbox(mailbox) {
+        const mailboxAddressParts = mailbox.split('@');
+        this.mailboxId = mailboxAddressParts[0];
     }
 
     initialiseConfiguration() {
@@ -63,17 +80,24 @@ class IngoToZimbraRuleConverter {
         this.db = mysql.getInstance(this.config);
     }
 
-    prepareToFetchMailboxData(mailbox) {
-        this.initialiseMailbox(mailbox);
-        this.initialiseConfiguration();
-        this.validateConfiguration();
-        this.initialiseDatabaseConnection();
-        this.fetchMailboxData();
+    initialiseMaps() {
+        this.combineMap = new Map();
+        this.combineMap.set('1', 'all');
+        this.combineMap.set('2', 'any');
+
+        this.actionMap = new Map();
+        this.actionMap.set('1', 'keep');
+        this.actionMap.set('2', 'fileinto');
+        this.actionMap.set('3', 'discard');
+        this.actionMap.set('4', 'redirect');
+        this.actionMap.set('5', 'keep redirect');
+        this.actionMap.set('11', 'keep fileinto');
+        this.actionMap.set('12', 'flag');
     }
 
-    initialiseMailbox(mailbox) {
-        const mailboxAddressParts = mailbox.split('@');
-        this.mailboxId = mailboxAddressParts[0];
+    initialiseFlags() {
+        // noinspection JSUnresolvedVariable
+        this.debug = application.debug;
     }
 
     fetchMailboxData() {
@@ -86,15 +110,67 @@ class IngoToZimbraRuleConverter {
         this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
             .then(results => {
                 // noinspection JSUnresolvedVariable
-                const data = results[0].rules.replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${value.length}:"${value}";`);
-                const rules = phpSerializer.unserialize(data);
-                console.log(rules);
+                const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
+                const rules = IngoToZimbraRuleConverter.convertSerializedRulesToArray(data);
+
+                rules.filter(this.invalidRuleFilter).forEach((rule) => {
+                    let conditionsString = '';
+                    // noinspection JSUnresolvedVariable
+                    rule.conditions.forEach((condition) => {
+                        // noinspection JSUnresolvedVariable
+                        conditionsString += `header "${condition.field.toLowerCase()}" all ${condition.match} "${condition.value}" `
+                    });
+
+                    // noinspection JSUnresolvedVariable
+                    process.stdout.write(`afrl "${rule.name}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} \n`);
+                });
                 this.exitWithNormalState();
             })
             .catch(e => {
                 console.error('Error while trying to fetch rules from database: ' + e);
                 this.exitWithErrorState();
             });
+    }
+
+    static convertSerializedRulesToArray(data) {
+        return phpSerializer.unserialize(data);
+    }
+
+    static fixBrokenSerializedData(results) {
+        return results[0].rules.replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${value.length}:"${value}";`);
+    }
+
+    invalidRuleFilter(rule) {
+        // noinspection JSUnresolvedVariable
+        if (rule.conditions.length === 0) {
+            this.writeToDebugLog(`# Skipping invalid rule "${rule.name}" with zero length conditions`);
+
+            return false;
+        }
+
+        if (['Whitelist', 'Blacklist', 'Vacation', 'Forward'].includes(rule.name)) {
+            this.writeToDebugLog(`# Skipping Ingo default rule "${rule.name}"`);
+
+            return false;
+        }
+
+        if (rule.action === '14') {
+            this.writeToDebugLog(`# Skipping SMS notification rule "${rule.name}"`);
+
+            return false;
+        }
+
+        if (!this.actionMap.has(rule.action)) {
+            this.writeToDebugLog(`# Skipping rule "${rule.name}" which requires unsupported action ${rule.action}`);
+
+            return false;
+        }
+
+        return true;
+    };
+
+    static actionValue(rule) {
+        return !['1', '3'].includes(rule.action) ? rule['action-value'] : '';
     }
 
     exitWithNormalState() {
@@ -105,6 +181,12 @@ class IngoToZimbraRuleConverter {
     exitWithErrorState() {
         // noinspection JSUnresolvedVariable, JSUnresolvedFunction
         process.exit(1);
+    }
+
+    writeToDebugLog(message) {
+        if (this.debug) {
+            console.warn(message);
+        }
     }
 }
 
