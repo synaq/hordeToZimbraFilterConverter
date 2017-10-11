@@ -153,13 +153,6 @@ class IngoToZimbraRuleConverter {
     }
 
     validRuleFilter(rule) {
-        // noinspection JSUnresolvedVariable
-        if (rule.conditions !== undefined && rule.conditions.length === 0) {
-            this.writeToDebugLog(`# Skipping invalid rule "${rule.name}" with zero length conditions`);
-
-            return false;
-        }
-
         if (['Whitelist', 'Blacklist', 'Vacation', 'Forward'].includes(rule.name)) {
             this.writeToDebugLog(`# Skipping Ingo default rule "${rule.name}"`);
 
@@ -179,7 +172,7 @@ class IngoToZimbraRuleConverter {
         }
 
         // noinspection JSUnresolvedVariable
-        if (rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).length === 0)
+        if (rule.conditions === undefined || rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).length === 0)
         {
             this.writeToDebugLog(`# Skipping rule "${rule.name}" because it has no valid conditions`);
 
