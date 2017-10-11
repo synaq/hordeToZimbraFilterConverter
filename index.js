@@ -93,6 +93,8 @@ class IngoToZimbraRuleConverter {
         this.actionMap.set('5', 'keep redirect');
         this.actionMap.set('11', 'keep fileinto');
         this.actionMap.set('12', 'flag');
+
+        this.uniqueRuleNameMap = new Map();
     }
 
     initialiseFlags() {
@@ -122,7 +124,7 @@ class IngoToZimbraRuleConverter {
                     });
 
                     // noinspection JSUnresolvedVariable
-                    process.stdout.write(`afrl "${rule.name}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} \n`);
+                    process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} \n`);
                 });
                 this.exitWithNormalState();
             })
@@ -171,6 +173,13 @@ class IngoToZimbraRuleConverter {
 
     static actionValue(rule) {
         return !['1', '3'].includes(rule.action) ? rule['action-value'] : '';
+    }
+
+    uniqueRuleName(ruleName) {
+        const ruleNumber = this.uniqueRuleNameMap.has(ruleName) ? this.uniqueRuleNameMap.get(ruleName) + 1 : 1;
+        this.uniqueRuleNameMap.set(ruleName, ruleNumber);
+
+        return ruleName + (ruleNumber > 1 ? ` ${ruleNumber}` : '');
     }
 
     exitWithNormalState() {
