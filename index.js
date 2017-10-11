@@ -153,7 +153,7 @@ class IngoToZimbraRuleConverter {
 
     invalidRuleFilter(rule) {
         // noinspection JSUnresolvedVariable
-        if (rule.conditions.length === 0) {
+        if (rule.conditions !== undefined && rule.conditions.length === 0) {
             this.writeToDebugLog(`# Skipping invalid rule "${rule.name}" with zero length conditions`);
 
             return false;
