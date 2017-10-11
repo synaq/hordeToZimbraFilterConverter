@@ -120,6 +120,13 @@ class IngoToZimbraRuleConverter {
                 const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
                 const rules = IngoToZimbraRuleConverter.convertSerializedRulesToArray(data);
 
+                if (rules.length === 0) {
+                    this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
+                    // noinspection JSUnresolvedVariable
+                    process.stdout.write('exit\n');
+                    this.exitWithNormalState();
+                }
+
                 // noinspection JSUnresolvedVariable
                 process.stdout.write(`sm ${this.mailbox} \n`);
 
