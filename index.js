@@ -116,6 +116,13 @@ class IngoToZimbraRuleConverter {
         // noinspection JSUnresolvedVariable
         this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
             .then(results => {
+                if (results.length === 0) {
+                    this.writeToDebugLog(`# No Ingo preferences found for ${this.mailbox}`);
+                    // noinspection JSUnresolvedVariable
+                    process.stdout.write('exit\n');
+                    this.exitWithNormalState();
+                }
+
                 // noinspection JSUnresolvedVariable
                 const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
                 const rules = IngoToZimbraRuleConverter.convertSerializedRulesToArray(data);
