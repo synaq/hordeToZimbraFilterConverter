@@ -11,7 +11,7 @@ const phpSerializer = require("serialize-like-php");
 class IngoToZimbraRuleConverter {
     initialiseApplication() {
         this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
-        this.invalidRuleFilter = this.invalidRuleFilter.bind(this);
+        this.validRuleFilter = this.validRuleFilter.bind(this);
 
         application.version('0.0.1')
             .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
@@ -119,12 +119,10 @@ class IngoToZimbraRuleConverter {
                 // noinspection JSUnresolvedVariable
                 process.stdout.write(`sm ${this.mailbox} \n`);
 
-                rules.filter(this.invalidRuleFilter).forEach((rule) => {
+                rules.filter(this.validRuleFilter).forEach((rule) => {
                     let conditionsString = '';
                     // noinspection JSUnresolvedVariable
-                    rule.conditions.filter((condition) => {
-                        return condition.value !== ''
-                    }).forEach((condition) => {
+                    rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
                         // noinspection JSUnresolvedVariable
                         conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${IngoToZimbraRuleConverter.conditionMatcher(condition)} "${condition.value}" `
                     });
@@ -151,7 +149,7 @@ class IngoToZimbraRuleConverter {
         return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${value.length}:"${value}";`);
     }
 
-    invalidRuleFilter(rule) {
+    validRuleFilter(rule) {
         // noinspection JSUnresolvedVariable
         if (rule.conditions !== undefined && rule.conditions.length === 0) {
             this.writeToDebugLog(`# Skipping invalid rule "${rule.name}" with zero length conditions`);
@@ -177,7 +175,19 @@ class IngoToZimbraRuleConverter {
             return false;
         }
 
+        // noinspection JSUnresolvedVariable
+        if (rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).length === 0)
+        {
+            this.writeToDebugLog(`# Skipping rule "${rule.name}" because it has no valid conditions`);
+
+            return false;
+        }
+
         return true;
+    };
+
+    static validConditionFilter(condition) {
+        return condition.value !== ''
     };
 
     static conditionSubject(condition) {
