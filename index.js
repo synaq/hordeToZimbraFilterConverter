@@ -41,6 +41,7 @@ class IngoToZimbraRuleConverter {
     initialiseMailbox(mailbox) {
         const mailboxAddressParts = mailbox.split('@');
         this.mailboxId = mailboxAddressParts[0];
+        this.mailbox = mailbox;
     }
 
     initialiseConfiguration() {
@@ -115,6 +116,9 @@ class IngoToZimbraRuleConverter {
                 const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
                 const rules = IngoToZimbraRuleConverter.convertSerializedRulesToArray(data);
 
+                // noinspection JSUnresolvedVariable
+                process.stdout.write(`sm ${this.mailbox} \n`);
+
                 rules.filter(this.invalidRuleFilter).forEach((rule) => {
                     let conditionsString = '';
                     // noinspection JSUnresolvedVariable
@@ -126,6 +130,9 @@ class IngoToZimbraRuleConverter {
                     // noinspection JSUnresolvedVariable
                     process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} \n`);
                 });
+
+                // noinspection JSUnresolvedVariable
+                process.stdout.write('exit\nexit\n');
                 this.exitWithNormalState();
             })
             .catch(e => {
