@@ -122,7 +122,9 @@ class IngoToZimbraRuleConverter {
                 rules.filter(this.invalidRuleFilter).forEach((rule) => {
                     let conditionsString = '';
                     // noinspection JSUnresolvedVariable
-                    rule.conditions.forEach((condition) => {
+                    rule.conditions.filter((condition) => {
+                        return condition.value !== ''
+                    }).forEach((condition) => {
                         // noinspection JSUnresolvedVariable
                         conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${condition.match} "${condition.value}" `
                     });
