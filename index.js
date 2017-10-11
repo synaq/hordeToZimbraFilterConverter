@@ -95,6 +95,9 @@ class IngoToZimbraRuleConverter {
         this.actionMap.set('11', 'keep fileinto');
         this.actionMap.set('12', 'flag');
 
+        this.matcherMap = new Map();
+        this.matcherMap.set('equal', 'is');
+
         this.uniqueRuleNameMap = new Map();
     }
 
@@ -124,7 +127,7 @@ class IngoToZimbraRuleConverter {
                     // noinspection JSUnresolvedVariable
                     rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
                         // noinspection JSUnresolvedVariable
-                        conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${IngoToZimbraRuleConverter.conditionMatcher(condition)} "${condition.value}" `
+                        conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${condition.value}" `
                     });
 
                     // noinspection JSUnresolvedVariable
@@ -197,8 +200,11 @@ class IngoToZimbraRuleConverter {
         return `${['from', 'to', 'cc'].includes(fieldName) ? 'address' : 'header'} "${fieldName}" ${['from', 'to', 'cc'].includes(fieldName) ? 'all' : ''}`
     }
 
-    static conditionMatcher(condition) {
-        return condition.match.match(/.* with$/) ? 'contains' : condition.match;
+    conditionMatcher(condition) {
+        let matcher = condition.match;
+        matcher = this.matcherMap.has(matcher) ? this.matcherMap.get(matcher) : matcher;
+
+        return matcher.match(/.* with$/) ? 'contains' : matcher;
     }
 
     static actionValue(rule) {
