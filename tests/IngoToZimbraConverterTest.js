@@ -74,6 +74,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator, BadExpressionStatementJS
             expect(commandLineInterface.action).to.have.been.called;
         });
+
+        it('parses the command line arguments', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator, BadExpressionStatementJS
+            expect(commandLineInterface.parse).to.have.been.calledWith(process.argv);
+        });
     });
 
     before(() => {
