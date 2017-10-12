@@ -32,6 +32,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator
             expect(commandLineInterface.arguments).to.have.been.calledWith('<mailbox>');
         });
+
+        it('expects the database host option', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator
+            expect(commandLineInterface.option).to.have.been.calledWith('-H, --database-host <host>', 'Database host (default localhost)');
+        });
     });
 
     before(() => {
