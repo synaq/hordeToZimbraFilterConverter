@@ -1,27 +1,34 @@
 'use strict';
 
 require('mocha');
-require('chai');
+const assert = require("assert");
 const fs = require('fs');
 const exec = require('child_process').exec;
 
 describe('ingo2zimbra', () => {
     context('when run with known parameters on the staging test database', () => {
-        it('produces the same output as the master file', () => {
-            const master = fs.readFileSync('tests/fixtures/93_rules.txt');
-
-            exec('../index.js -D -H 10.1.5.2 -u devuser -p !@synaqIMPORT 0834127047@mymtnmail.co.za', (error, stdout) => {
-                // noinspection JSUnresolvedVariable
-                expect(stdout).to.equal(master);
+        it('does not exit with an error status', (done) => {
+            exec('tests/../index.js -D -H 10.1.5.2 -u devuser -p !@synaqIMPORT 0834127047@mymtnmail.co.za', (error) => {
+                assert.equal(null, error);
+                done();
             });
         });
 
-        it('produces the same warnings as the master set', () => {
+        it('produces the same output as the master file', (done) => {
+            const master = fs.readFileSync('tests/fixtures/93_rules.txt');
+
+            exec('tests/../index.js -D -H 10.1.5.2 -u devuser -p !@synaqIMPORT 0834127047@mymtnmail.co.za', (error, stdout) => {
+                assert.equal(stdout, master);
+                done();
+            });
+        });
+
+        it('produces the same warnings as the master set', (done) => {
             const master = fs.readFileSync('tests/fixtures/93_rules_warnings.txt');
 
-            exec('../index.js -D -H 10.1.5.2 -u devuser -p !@synaqIMPORT 0834127047@mymtnmail.co.za', (error, stdout, stderr) => {
-                // noinspection JSUnresolvedVariable
-                expect(stderr).to.equal(master);
+            exec('tests/../index.js -D -H 10.1.5.2 -u devuser -p !@synaqIMPORT 0834127047@mymtnmail.co.za', (error, stdout, stderr) => {
+                assert.equal(master, stderr);
+                done();
             });
         });
     });
