@@ -5,10 +5,11 @@ const IngoToZimbraConverter = require('../src/IngoToZimbraRuleConverter');
 const chai = require('chai');
 const sinon = require('sinon');
 const sinonChai = require('sinon-chai');
+const sinonStubPromse = require('sinon-stub-promise');
 
 // noinspection JSUnresolvedVariable
 const expect = chai.expect;
-
+sinonStubPromse(sinon);
 chai.use(sinonChai);
 // noinspection JSUnresolvedVariable
 sinon.assert.expose(chai.assert, {prefix: ""});
@@ -82,32 +83,92 @@ describe('IngoToZimbraConverter', () => {
         });
     });
 
-    before(() => {
+    context('when valid rules are returned', () => {
+        it('writes out a command to set the mailbox', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('sm foo@bar.com \n');
+        });
+    });
+
+    const prepareStubs = () => {
+        returnedRules = [
+            {
+                action: '2',
+                'action-value': 'SomeFolder',
+                combine: '2',
+                conditions: [
+                    {
+                        field: 'Subject',
+                        match: 'contains',
+                        value: 'something'
+                    },
+                    {
+                        field: 'From',
+                        match: 'is',
+                        value: 'foo@bar.com'
+                    }
+                ],
+                name: 'Some Rule',
+                stop: '1'
+            }
+        ];
+
         sandbox = sinon.sandbox.create();
+        realExit = process.exit;
+        process.exit = sandbox.spy();
+        process.stdout.write = sandbox.spy();
         commandLineInterface = {
             version: sandbox.stub().returnsThis(),
             description: sandbox.stub().returnsThis(),
             arguments: sandbox.stub().returnsThis(),
             option: sandbox.stub().returnsThis(),
             action: sandbox.stub().callsFake((action) => {
-                actionFunction = action
-            }).returnsThis(),
+                actionFunction = action;
+
+                return this;
+            }),
             parse: sandbox.stub().callsFake(() => {
-                actionFunction();
-            }).returnsThis()
+                actionFunction('foo@bar.com');
+
+                return this;
+            }),
+            databaseHost: 'localhost',
+            databasePost: 3306,
+            database: 'something',
+            databaseUser: 'somebody',
+            databasePassword: 'somePassword',
+            help: sandbox.stub()
         };
-        mySqlClient = sandbox.stub();
-        phpSerializer = sandbox.stub();
+        databaseInstance = {
+            exec: sandbox.stub().returnsPromise().resolves([{rules: '{s:5:"Rules"}'}])
+        };
+        mySqlClient = {
+            getInstance: sandbox.stub().returns(databaseInstance)
+        };
+        phpSerializer = {
+            unserialize: () => {
+                return returnedRules;
+            }
+        };
         converter = new IngoToZimbraConverter(commandLineInterface, mySqlClient, phpSerializer);
-    });
+    };
+
+    before(prepareStubs);
 
     after(() => {
         sandbox.reset();
+        process.stdout.write = realStdoutWrite;
+        process.exit = realExit;
     });
 
+    let realStdoutWrite = process.stdout.write;
+    let realExit;
+    let returnedRules;
     let sandbox;
     let commandLineInterface;
     let mySqlClient;
+    let databaseInstance;
     let phpSerializer;
     let converter;
     let actionFunction;
