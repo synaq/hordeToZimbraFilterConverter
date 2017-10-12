@@ -407,6 +407,23 @@ describe('IngoToZimbraConverter', () => {
         });
     });
 
+    context('when invalid or superfluous rules are returned', () => {
+        it('skips the Ingo Whitelist rule', () => {
+            returnedRules = [
+                {
+                    action: '9',
+                    name: 'Whitelist'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping Ingo default rule "Whitelist"');
+        });
+    });
+
     const prepareStubs = () => {
         returnedRules = [
             {
@@ -434,6 +451,7 @@ describe('IngoToZimbraConverter', () => {
         realExit = process.exit;
         process.exit = sandbox.spy();
         process.stdout.write = sandbox.spy();
+        console.warn = sandbox.spy();
         commandLineInterface = {
             version: sandbox.stub().returnsThis(),
             description: sandbox.stub().returnsThis(),
@@ -454,7 +472,8 @@ describe('IngoToZimbraConverter', () => {
             database: 'something',
             databaseUser: 'somebody',
             databasePassword: 'somePassword',
-            help: sandbox.stub()
+            help: sandbox.stub(),
+            debug: true
         };
         databaseInstance = {
             exec: sandbox.stub().returnsPromise().resolves([{rules: '{s:5:"Rules"}'}])
@@ -475,10 +494,12 @@ describe('IngoToZimbraConverter', () => {
     after(() => {
         sandbox.reset();
         process.stdout.write = realStdoutWrite;
+        console.warn = realConsoleWarn;
         process.exit = realExit;
     });
 
     let realStdoutWrite = process.stdout.write;
+    let realConsoleWarn = console.warn;
     let realExit;
     let returnedRules;
     let sandbox;
