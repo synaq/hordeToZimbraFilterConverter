@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 
-// noinspection JSUnresolvedFunction
 const application = require("commander");
-// noinspection JSUnresolvedFunction
 const mysql = require('nodejs-mysql').default;
-// noinspection JSUnresolvedVariable, JSUnresolvedFunction
 const phpSerializer = require("serialize-like-php");
 
 class IngoToZimbraRuleConverter {
@@ -73,7 +70,7 @@ class IngoToZimbraRuleConverter {
 
         if (hasError) {
             application.help();
-            this.exitWithErrorState();
+            IngoToZimbraRuleConverter.exitWithErrorState();
         }
     }
 
@@ -120,7 +117,7 @@ class IngoToZimbraRuleConverter {
                     this.writeToDebugLog(`# No Ingo preferences found for ${this.mailbox}`);
                     // noinspection JSUnresolvedVariable
                     process.stdout.write('exit\n');
-                    this.exitWithNormalState();
+                    IngoToZimbraRuleConverter.exitWithNormalState();
                 }
 
                 // noinspection JSUnresolvedVariable
@@ -131,7 +128,7 @@ class IngoToZimbraRuleConverter {
                     this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
                     // noinspection JSUnresolvedVariable
                     process.stdout.write('exit\n');
-                    this.exitWithNormalState();
+                    IngoToZimbraRuleConverter.exitWithNormalState();
                 }
 
                 // noinspection JSUnresolvedVariable
@@ -151,11 +148,11 @@ class IngoToZimbraRuleConverter {
 
                 // noinspection JSUnresolvedVariable
                 process.stdout.write('exit\nexit\n');
-                this.exitWithNormalState();
+                IngoToZimbraRuleConverter.exitWithNormalState();
             })
             .catch(e => {
                 console.error('Error while trying to fetch rules from database: ' + e);
-                this.exitWithErrorState();
+                IngoToZimbraRuleConverter.exitWithErrorState();
             });
     }
 
@@ -239,12 +236,12 @@ class IngoToZimbraRuleConverter {
         return ruleName + (ruleNumber > 1 ? ` ${ruleNumber}` : '');
     }
 
-    exitWithNormalState() {
+    static exitWithNormalState() {
         // noinspection JSUnresolvedVariable, JSUnresolvedFunction
         process.exit(0);
     }
 
-    exitWithErrorState() {
+    static exitWithErrorState() {
         // noinspection JSUnresolvedVariable, JSUnresolvedFunction
         process.exit(1);
     }
