@@ -230,7 +230,7 @@ class IngoToZimbraRuleConverter {
     }
 
     static actionValue(rule) {
-        return !['1', '3'].includes(rule.action) ? `"${rule['action-value']}"` : '';
+        return !['1', '3', '6'].includes(rule.action) ? `"${rule['action-value']}"` : '';
     }
 
     uniqueRuleName(ruleName) {
