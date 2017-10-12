@@ -56,6 +56,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator
             expect(commandLineInterface.option).to.have.been.calledWith('-u, --database-user <user>', 'Database user name');
         });
+
+        it('expects the database password option', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator
+            expect(commandLineInterface.option).to.have.been.calledWith('-p, --database-password <password>', 'Database password');
+        });
     });
 
     before(() => {
