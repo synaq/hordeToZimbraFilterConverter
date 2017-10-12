@@ -68,6 +68,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator
             expect(commandLineInterface.option).to.have.been.calledWith('-D, --debug', 'Write warnings when skipping invalid or unwanted rules');
         });
+
+        it('sets a callback action for the command line interface', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator, BadExpressionStatementJS
+            expect(commandLineInterface.action).to.have.been.called;
+        });
     });
 
     before(() => {
