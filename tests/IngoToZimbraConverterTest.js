@@ -81,6 +81,18 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator, BadExpressionStatementJS
             expect(commandLineInterface.parse).to.have.been.calledWith(process.argv);
         });
+
+        it('queries the database for the Ingo preferences for the given mailbox using its local part as ID', () => {
+            const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
+                'FROM horde_prefs ' +
+                'WHERE pref_uid = ? ' +
+                'AND pref_scope = ? ' +
+                'AND pref_name = ?';
+
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(databaseInstance.exec).to.have.been.calledWith(query, ['foo', 'ingo', 'rules']);
+        });
     });
 
     context('when valid rules are returned', () => {
