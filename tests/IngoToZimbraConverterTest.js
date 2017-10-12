@@ -38,6 +38,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator
             expect(commandLineInterface.option).to.have.been.calledWith('-H, --database-host <host>', 'Database host (default localhost)');
         });
+
+        it('expects the database port option', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator
+            expect(commandLineInterface.option).to.have.been.calledWith('-P, --database-port <port>', 'Database port (default 3306)');
+        });
     });
 
     before(() => {
