@@ -6,9 +6,10 @@ const mysql = require('nodejs-mysql').default;
 const phpSerializer = require("serialize-like-php");
 
 class IngoToZimbraRuleConverter {
-    constructor(commandLineInterface, mySqlClient) {
+    constructor(commandLineInterface, mySqlClient, phpSerializer) {
         this.commandLineInterface = commandLineInterface;
         this.mySqlClient = mySqlClient;
+        this.phpSerializer = phpSerializer;
     }
 
     initialiseApplication() {
@@ -128,7 +129,7 @@ class IngoToZimbraRuleConverter {
 
                 // noinspection JSUnresolvedVariable
                 const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
-                const rules = IngoToZimbraRuleConverter.convertSerializedRulesToArray(data);
+                const rules = this.convertSerializedRulesToArray(data);
 
                 if (rules.length === 0) {
                     this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
@@ -162,8 +163,8 @@ class IngoToZimbraRuleConverter {
             });
     }
 
-    static convertSerializedRulesToArray(data) {
-        return phpSerializer.unserialize(data);
+    convertSerializedRulesToArray(data) {
+        return this.phpSerializer.unserialize(data);
     }
 
     static fixBrokenSerializedData(results) {
@@ -259,5 +260,5 @@ class IngoToZimbraRuleConverter {
     }
 }
 
-const converter = new IngoToZimbraRuleConverter(application, mysql);
+const converter = new IngoToZimbraRuleConverter(application, mysql, phpSerializer);
 converter.initialiseApplication();
