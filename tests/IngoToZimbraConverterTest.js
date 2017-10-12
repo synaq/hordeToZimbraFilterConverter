@@ -331,7 +331,7 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  flag "SomeFlag" stop\n');
         });
 
-        it('remaps "begins with" matches to contains', () => {
+        it('remaps "begins with" matches to "contains"', () => {
             returnedRules = [
                 {
                     action: '3',
@@ -356,7 +356,32 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  discard  \n');
         });
 
-        it('remaps "ends with" matches to contains', () => {
+        it('remaps "ends with" matches to "contains"', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'ends with',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  discard  \n');
+        });
+
+        it('remaps "equal" matches to "is"', () => {
             returnedRules = [
                 {
                     action: '3',
