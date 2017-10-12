@@ -6,11 +6,16 @@ const mysql = require('nodejs-mysql').default;
 const phpSerializer = require("serialize-like-php");
 
 class IngoToZimbraRuleConverter {
+    constructor(commandLineInterface) {
+        this.commandLineInterface = commandLineInterface;
+    }
+
     initialiseApplication() {
         this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
         this.validRuleFilter = this.validRuleFilter.bind(this);
 
-        application.version('0.0.1')
+        // noinspection JSAnnotator
+        this.commandLineInterface.version('0.0.1')
             .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
             .arguments('<mailbox>')
             .option('-H, --database-host <host>', 'Database host (default localhost)')
@@ -22,7 +27,7 @@ class IngoToZimbraRuleConverter {
             .action(this.prepareToFetchMailboxData);
 
         // noinspection JSUnresolvedVariable
-        application.parse(process.argv);
+        this.commandLineInterface.parse(process.argv);
     }
 
     prepareToFetchMailboxData(mailbox) {
@@ -45,15 +50,15 @@ class IngoToZimbraRuleConverter {
         this.config = {};
 
         // noinspection JSUnresolvedVariable
-        this.config.host = application.databaseHost || 'localhost';
+        this.config.host = this.commandLineInterface.databaseHost || 'localhost';
         // noinspection JSUnresolvedVariable
-        this.config.port = application.databasePort || 3306;
+        this.config.port = this.commandLineInterface.databasePort || 3306;
         // noinspection JSUnresolvedVariable
-        this.config.database = application.database || 'horde';
+        this.config.database = this.commandLineInterface.database || 'horde';
         // noinspection JSUnresolvedVariable
-        this.config.user = application.databaseUser;
+        this.config.user = this.commandLineInterface.databaseUser;
         // noinspection JSUnresolvedVariable
-        this.config.password = application.databasePassword;
+        this.config.password = this.commandLineInterface.databasePassword;
     }
 
     validateConfiguration() {
@@ -69,7 +74,7 @@ class IngoToZimbraRuleConverter {
         }
 
         if (hasError) {
-            application.help();
+            this.commandLineInterface.help();
             IngoToZimbraRuleConverter.exitWithErrorState();
         }
     }
@@ -101,7 +106,7 @@ class IngoToZimbraRuleConverter {
 
     initialiseFlags() {
         // noinspection JSUnresolvedVariable
-        this.debug = application.debug;
+        this.debug = this.commandLineInterface.debug;
     }
 
     fetchMailboxData() {
@@ -253,5 +258,5 @@ class IngoToZimbraRuleConverter {
     }
 }
 
-const converter = new IngoToZimbraRuleConverter();
+const converter = new IngoToZimbraRuleConverter(application);
 converter.initialiseApplication();
