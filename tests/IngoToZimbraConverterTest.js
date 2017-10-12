@@ -453,6 +453,21 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# Skipping Ingo default rule "Blacklist"');
         });
+
+        it('skips the Ingo Forward rule', () => {
+            returnedRules = [
+                {
+                    action: '10',
+                    name: 'Forward'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping Ingo default rule "Forward"');
+        });
     });
 
     const prepareStubs = () => {
