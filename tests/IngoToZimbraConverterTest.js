@@ -468,6 +468,30 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# Skipping Ingo default rule "Forward"');
         });
+
+        it('skips the redundant spam rule', () => {
+            returnedRules = [
+                {
+                    action: '2',
+                    'action-value': 'INBOX.spam',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'X-Spam-Flag',
+                            match: 'contains',
+                            value: 'YES'
+                        }
+                    ],
+                    name: 'spam'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping redundant spam rule "spam"');
+        });
     });
 
     const prepareStubs = () => {
