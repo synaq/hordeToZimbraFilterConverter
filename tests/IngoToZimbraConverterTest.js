@@ -99,11 +99,23 @@ describe('IngoToZimbraConverter', () => {
                 normalize: sandbox.stub().returnsThis(),
                 replace: sandbox.stub().returnsThis()
             };
-            phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
             databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(rules.normalize).to.have.been.calledWith('NFKD');
+        });
+
+        it('fixes the incorrect string lengths in the rule string after normalizing it', () => {
+            const normalizedString = {
+                replace: sandbox.stub().returnsThis()
+            };
+            const rules = {
+                normalize: sandbox.stub().returns(normalizedString),
+            };
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(normalizedString.replace).to.have.been.calledWith(/s:(\d+):"(.*?)";/gu, sinon.match.any);
         });
 
         it('uses the PHP serializer polyfill to unserialize the rules', () => {
