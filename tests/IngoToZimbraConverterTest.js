@@ -50,6 +50,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable, JSAnnotator
             expect(commandLineInterface.option).to.have.been.calledWith('-d, --database <database>', 'Database name (default horde)');
         });
+
+        it('expects the database user option', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator
+            expect(commandLineInterface.option).to.have.been.calledWith('-u, --database-user <user>', 'Database user name');
+        });
     });
 
     before(() => {
