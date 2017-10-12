@@ -567,6 +567,17 @@ describe('IngoToZimbraConverter', () => {
         });
     });
 
+    context('when no rules are returned', () => {
+        it('logs the problem and skips the mailbox entirely', () => {
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# No rules found for foo@bar.com');
+        });
+    });
+
     const prepareStubs = () => {
         returnedRules = [
             {
