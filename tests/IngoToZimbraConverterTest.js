@@ -355,6 +355,31 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  discard  \n');
         });
+
+        it('remaps "ends with" matches to contains', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'ends with',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  discard  \n');
+        });
     });
 
     const prepareStubs = () => {
