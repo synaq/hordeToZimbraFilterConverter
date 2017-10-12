@@ -94,8 +94,20 @@ describe('IngoToZimbraConverter', () => {
             expect(databaseInstance.exec).to.have.been.calledWith(query, ['foo', 'ingo', 'rules']);
         });
 
+        it('normalizes Unicode characters in the rule string for compatiblity', () => {
+            const rules = {
+                normalize: sandbox.stub().returnsThis(),
+                replace: sandbox.stub().returnsThis()
+            };
+            phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(rules.normalize).to.have.been.calledWith('NFKD');
+        });
+
         it('uses the PHP serializer polyfill to unserialize the rules', () => {
-            let rules = '{s:10:"Some Rules"}';
+            const rules = '{s:10:"Some Rules"}';
             phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
             databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
             converter.initialiseApplication();
