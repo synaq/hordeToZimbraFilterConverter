@@ -89,6 +89,12 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('sm foo@bar.com \n');
         });
+
+        it('includes two exit statements to make sure that zmprov exits automatically', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('exit\nexit\n');
+        });
     });
 
     const prepareStubs = () => {
