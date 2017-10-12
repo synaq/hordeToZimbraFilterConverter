@@ -93,6 +93,15 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(databaseInstance.exec).to.have.been.calledWith(query, ['foo', 'ingo', 'rules']);
         });
+
+        it('uses the PHP serializer polyfill to unserialize the rules', () => {
+            let rules = '{s:10:"Some Rules"}';
+            phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(phpSerializer.unserialize).to.have.been.calledWith(rules);
+        });
     });
 
     context('when valid rules are returned', () => {
