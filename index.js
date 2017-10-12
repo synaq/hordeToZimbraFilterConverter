@@ -6,8 +6,9 @@ const mysql = require('nodejs-mysql').default;
 const phpSerializer = require("serialize-like-php");
 
 class IngoToZimbraRuleConverter {
-    constructor(commandLineInterface) {
+    constructor(commandLineInterface, mySqlClient) {
         this.commandLineInterface = commandLineInterface;
+        this.mySqlClient = mySqlClient;
     }
 
     initialiseApplication() {
@@ -80,7 +81,7 @@ class IngoToZimbraRuleConverter {
     }
 
     initialiseDatabaseConnection() {
-        this.db = mysql.getInstance(this.config);
+        this.db = this.mySqlClient.getInstance(this.config);
     }
 
     initialiseMaps() {
@@ -258,5 +259,5 @@ class IngoToZimbraRuleConverter {
     }
 }
 
-const converter = new IngoToZimbraRuleConverter(application);
+const converter = new IngoToZimbraRuleConverter(application, mysql);
 converter.initialiseApplication();
