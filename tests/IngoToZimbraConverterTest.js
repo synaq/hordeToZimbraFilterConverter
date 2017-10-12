@@ -492,6 +492,30 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# Skipping redundant spam rule "spam"');
         });
+
+        it('skips the redundant SMS notification rule', () => {
+            returnedRules = [
+                {
+                    action: '14',
+                    'action-value': '',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'X-Spam-Flag',
+                            match: 'not exists',
+                            value: ''
+                        }
+                    ],
+                    name: 'sms-notify'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping SMS notification rule "sms-notify"');
+        });
     });
 
     const prepareStubs = () => {
