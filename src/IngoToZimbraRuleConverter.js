@@ -101,6 +101,7 @@ class IngoToZimbraRuleConverter {
         this.matcherMap.set('equal', 'is');
         this.matcherMap.set('not contain', 'not_contains');
         this.matcherMap.set('exists', 'contains');
+        this.matcherMap.set('greater than', 'over');
 
         this.uniqueRuleNameMap = new Map();
     }
@@ -145,7 +146,7 @@ class IngoToZimbraRuleConverter {
                     // noinspection JSUnresolvedVariable
                     rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
                         // noinspection JSUnresolvedVariable
-                        conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${condition.value}" `
+                        conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${IngoToZimbraRuleConverter.conditionValue(condition)}" `
                     });
 
                     // noinspection JSUnresolvedVariable
@@ -228,6 +229,10 @@ class IngoToZimbraRuleConverter {
             fieldName = fieldName.toLowerCase();
         }
 
+        if (fieldName.toLowerCase() === 'size') {
+            return `size`
+        }
+
         return `${addressFields.includes(fieldName.toLowerCase()) ? 'address' : 'header'} "${fieldName}" ${addressFields.includes(fieldName.toLowerCase()) ? 'all' : ''}`
     }
 
@@ -236,6 +241,10 @@ class IngoToZimbraRuleConverter {
         matcher = this.matcherMap.has(matcher) ? this.matcherMap.get(matcher) : matcher;
 
         return matcher.match(/.* with$/) ? 'contains' : matcher;
+    }
+
+    static conditionValue(condition) {
+        return condition.field.toLowerCase() === 'size' ? condition.value.replace(/B/, '') : condition.value;
     }
 
     static actionValue(rule) {

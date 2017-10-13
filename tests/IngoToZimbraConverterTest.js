@@ -620,6 +620,31 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "An Exists Rule" active all header "subject"  contains "SOMETHING"  discard  \n');
         });
+
+        it('translates size rules with greater than matchers into the correct Zimbra format', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'greater than',
+                            value: '500KB'
+                        }
+                    ],
+                    name: 'A Size Greater Than Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Size Greater Than Rule" active all size over "500K"  discard  \n');
+        });
     });
 
     context('when invalid or superfluous rules are returned', () => {
