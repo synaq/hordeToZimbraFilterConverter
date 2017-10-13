@@ -187,6 +187,13 @@ class IngoToZimbraRuleConverter {
             return false;
         }
 
+        // noinspection EqualityComparisonWithCoercionJS
+        if (['2'].includes(rule.action) && rule['action-value'] == '') {
+            this.writeToDebugLog(`# Skipping rule "${rule.name}" because it requires an action value but provided none`);
+
+            return false;
+        }
+
         // noinspection JSUnresolvedVariable
         if (rule.conditions === undefined || rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).length === 0) {
             this.writeToDebugLog(`# Skipping rule "${rule.name}" because it has no valid conditions`);

@@ -700,6 +700,30 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Rule" because it has no valid conditions');
         });
+
+        it('skips rules with action 2 which have no action value', () => {
+            returnedRules = [
+                {
+                    action: '2',
+                    'action-value': '',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'subject',
+                            match: 'contains',
+                            value: 'Something'
+                        }
+                    ],
+                    name: 'Some Copy To Path Rule'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Copy To Path Rule" because it requires an action value but provided none');
+        });
     });
 
     context('when no rules are returned', () => {
