@@ -406,6 +406,36 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active all address "From" all is "bar@baz.com"  keep  \n');
         });
 
+        it('ignores conditions with no field', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: '',
+                            match: 'contains',
+                            value: 'Something'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@baz-nofield.com'
+                        }
+                    ],
+                    name: 'Condition with no field Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "Condition with no field Rule" active any address "From" all is "bar@baz-nofield.com"  keep  \n');
+        });
+
         it('ignores unsupported "regex" conditions', () => {
             returnedRules = [
                 {
