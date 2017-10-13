@@ -102,6 +102,7 @@ class IngoToZimbraRuleConverter {
         this.matcherMap.set('not contain', 'not_contains');
         this.matcherMap.set('exists', 'contains');
         this.matcherMap.set('greater than', 'over');
+        this.matcherMap.set('less than', 'under');
 
         this.uniqueRuleNameMap = new Map();
     }
