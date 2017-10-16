@@ -95,6 +95,7 @@ class IngoToZimbraRuleConverter {
         this.actionMap.set('5', 'keep redirect');
         this.actionMap.set('6', 'discard');
         this.actionMap.set('11', 'keep fileinto');
+        this.actionMap.set('13', 'notify');
 
         this.matcherMap = new Map();
         this.matcherMap.set('equal', 'is');
@@ -255,6 +256,10 @@ class IngoToZimbraRuleConverter {
     }
 
     static actionValue(rule) {
+        if (rule.action === '13') {
+            return `"${rule['action-value']}" "Delivery notification" "A message has been delivered to your account which matched notification rule \\"${rule.name}\\""`
+        }
+
         return !['1', '3', '6'].includes(rule.action) ? `"${rule['action-value']}"` : '';
     }
 

@@ -415,6 +415,31 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  keep fileinto "Another/Folder" stop\n');
         });
 
+        it('translates action 13 to a notify rule', () => {
+            returnedRules = [
+                {
+                    action: '13',
+                    'action-value': 'foo@bar.com',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'contains',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Notify Rule',
+                    stop: '1'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Notify Rule" active all header "subject"  contains "SOMETHING"  notify "foo@bar.com" "Delivery notification" "A message has been delivered to your account which matched notification rule \\"A Notify Rule\\"" stop\n');
+        });
+
         it('ignores incomplete conditions', () => {
             returnedRules = [
                 {
