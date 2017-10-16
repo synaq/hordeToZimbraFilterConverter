@@ -141,6 +141,45 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('exit\nexit\n');
         });
 
+        it('makes sure that all rule names for the mailbox are unique', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@baz.com'
+                        }
+                    ],
+                    name: 'Duplicate Rule Name',
+                    stop: null
+                },
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'baz@baz.com'
+                        }
+                    ],
+                    name: 'Duplicate Rule Name',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "Duplicate Rule Name 2" active all address "From" all is "baz@baz.com"  keep  \n');
+        });
+
         it('translates action 1 to a keep rule', () => {
             returnedRules = [
                 {
