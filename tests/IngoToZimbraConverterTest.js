@@ -626,6 +626,31 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  not_contains "SOMETHING"  discard  \n');
         });
 
+        it('remaps "not exist" matches to "not_contains"', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'not exist',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Not Exist Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Not Exist Rule" active all header "subject"  not_contains "SOMETHING"  discard  \n');
+        });
+
         it('remaps "exists" matches with action value to "contains"', () => {
             returnedRules = [
                 {
