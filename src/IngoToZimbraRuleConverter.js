@@ -27,6 +27,7 @@ class IngoToZimbraRuleConverter {
 
         // noinspection JSUnresolvedVariable
         this.commandLineInterface.parse(process.argv);
+        this.outputHelpIfNoMailboxWasSpecified();
     }
 
     prepareToFetchMailboxData(mailbox) {
@@ -37,6 +38,12 @@ class IngoToZimbraRuleConverter {
         this.initialiseMaps();
         this.initialiseFlags();
         this.fetchMailboxData();
+    }
+
+    outputHelpIfNoMailboxWasSpecified() {
+        if (!process.argv.slice(2).length) {
+            this.commandLineInterface.help();
+        }
     }
 
     initialiseMailbox(mailbox) {
@@ -74,7 +81,6 @@ class IngoToZimbraRuleConverter {
 
         if (hasError) {
             this.commandLineInterface.help();
-            IngoToZimbraRuleConverter.exitWithErrorState();
         }
     }
 
