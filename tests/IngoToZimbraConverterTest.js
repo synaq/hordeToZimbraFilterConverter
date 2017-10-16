@@ -180,6 +180,31 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "Duplicate Rule Name 2" active all address "From" all is "baz@baz.com"  keep  \n');
         });
 
+        it('properly escapes backslashes if they are the last character in the rule name string', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@baz.com'
+                        }
+                    ],
+                    name: 'Bullshit rule name \\',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "Bullshit rule name \\\\" active all address "From" all is "bar@baz.com"  keep  \n');
+        });
+
         it('translates action 1 to a keep rule', () => {
             returnedRules = [
                 {

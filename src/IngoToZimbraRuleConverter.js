@@ -254,6 +254,10 @@ class IngoToZimbraRuleConverter {
     }
 
     uniqueRuleName(ruleName) {
+        if (ruleName.slice(-1) === '\\') {
+            ruleName += '\\';
+        }
+
         const ruleNumber = this.uniqueRuleNameMap.has(ruleName) ? this.uniqueRuleNameMap.get(ruleName) + 1 : 1;
         this.uniqueRuleNameMap.set(ruleName, ruleNumber);
 
