@@ -93,7 +93,9 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(databaseInstance.exec).to.have.been.calledWith(query, ['foo', 'ingo', 'rules']);
         });
+    });
 
+    context('when the data is found in the database', () => {
         it('normalizes Unicode characters in the rule string for compatiblity', () => {
             const rules = {
                 normalize: sandbox.stub().returnsThis(),
