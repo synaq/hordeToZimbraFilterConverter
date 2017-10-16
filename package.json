@@ -20,5 +20,8 @@
     "sinon": "^4.0.1",
     "sinon-chai": "^2.14.0",
     "sinon-stub-promise": "^4.0.0"
+  },
+  "scripts": {
+    "test": "node node_modules/mocha/bin/_mocha tests"
   }
 }
