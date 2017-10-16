@@ -91,3 +91,10 @@ To run the tests:
 ```bash
 yarn run test
 ```
+
+##How rules are processed
+
+An in-depth speficication for how rules are processed, generated from the latest output
+from our Mocha test runner, is available here on the Wiki page here:
+
+https://github.com/synaq/ingo2zimbra/wiki/In-depth-description-of-processing
