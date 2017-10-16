@@ -57,7 +57,7 @@ Some rules are not required or supported by Zimbra, or are not converted because
 they are not required in a Zimbra environment. Here is a brief list of unsupported
 or omitted rules:
 
-* *Redirect with reason*: This is remapped to a simply `discard` rule to save on traffic.
+* *Redirect with reason*: This is remapped to a simple `discard` rule to save on traffic.
 * *Whitelist*: An internal Ingo rule, this is ignored.
 * *Blacklist*: An internal Ingo rule, this is ignored.
 * *Forwardt*: An internal Ingo rule, this is ignored.
