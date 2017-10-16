@@ -415,31 +415,6 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  keep fileinto "Another/Folder" stop\n');
         });
 
-        it('translates action 12 to a keep fileinto rule', () => {
-            returnedRules = [
-                {
-                    action: '12',
-                    'action-value': 'SomeFlag',
-                    combine: '1',
-                    conditions: [
-                        {
-                            field: 'Subject',
-                            match: 'contains',
-                            value: 'SOMETHING'
-                        }
-                    ],
-                    name: 'A Rule',
-                    stop: '1'
-                }
-            ];
-            phpSerializer.unserialize = () => {
-                return returnedRules;
-            };
-            converter.initialiseApplication();
-            // noinspection JSUnresolvedVariable
-            expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  flag "SomeFlag" stop\n');
-        });
-
         it('ignores incomplete conditions', () => {
             returnedRules = [
                 {
@@ -942,6 +917,31 @@ describe('IngoToZimbraConverter', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Copy To Path Rule" because it requires an action value but provided none');
+        });
+
+        it('skips flag rules as those are claimed to be supported by Zimbra documentation, but rejected in practice', () => {
+            returnedRules = [
+                {
+                    action: '12',
+                    'action-value': 'SomeFlag',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'contains',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Flag Rule',
+                    stop: '1'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping flag rule "A Flag Rule" because Zimbra rejects flag rules, even though they are claimed to be valid in the documentation');
         });
     });
 

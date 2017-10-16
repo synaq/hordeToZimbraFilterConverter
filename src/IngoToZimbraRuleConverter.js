@@ -95,7 +95,6 @@ class IngoToZimbraRuleConverter {
         this.actionMap.set('5', 'keep redirect');
         this.actionMap.set('6', 'discard');
         this.actionMap.set('11', 'keep fileinto');
-        this.actionMap.set('12', 'flag');
 
         this.matcherMap = new Map();
         this.matcherMap.set('equal', 'is');
@@ -182,6 +181,12 @@ class IngoToZimbraRuleConverter {
 
         if (rule.action === '14') {
             this.writeToDebugLog(`# Skipping SMS notification rule "${rule.name}"`);
+
+            return false;
+        }
+
+        if (rule.action === '12') {
+            this.writeToDebugLog(`# Skipping flag rule "${rule.name}" because Zimbra rejects flag rules, even though they are claimed to be valid in the documentation`);
 
             return false;
         }
