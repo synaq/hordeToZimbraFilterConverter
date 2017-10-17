@@ -163,7 +163,9 @@ class IngoToZimbraRuleConverter {
                 });
 
                 // noinspection JSUnresolvedVariable
-                process.stdout.write('exit\nexit\n');
+                if (!this.commandLineInterface.noExit) {
+                    process.stdout.write('exit\nexit\n');
+                }
                 IngoToZimbraRuleConverter.exitWithNormalState();
             })
             .catch(e => {

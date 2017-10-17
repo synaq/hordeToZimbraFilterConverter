@@ -149,6 +149,13 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('exit\nexit\n');
         });
 
+        it('omits the exist statements if the no-exit flag was specified', () => {
+            commandLineInterface.noExit = true;
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.not.have.been.calledWith('exit\nexit\n');
+        });
+
         it('makes sure that all rule names for the mailbox are unique', () => {
             returnedRules = [
                 {
@@ -475,7 +482,7 @@ describe('IngoToZimbraConverter', () => {
             };
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
-            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active all address "From" all is "bar@baz.com"  keep  \n');
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@baz.com"  keep  \n');
         });
 
         it('ignores conditions with no field', () => {
@@ -1038,7 +1045,8 @@ describe('IngoToZimbraConverter', () => {
             databaseUser: 'somebody',
             databasePassword: 'somePassword',
             help: sandbox.stub(),
-            debug: true
+            debug: true,
+            noExit: false
         };
         databaseInstance = {
             exec: sandbox.stub().returnsPromise().resolves([{rules: '{s:5:"Rules"}'}])
@@ -1054,9 +1062,9 @@ describe('IngoToZimbraConverter', () => {
         converter = new IngoToZimbraConverter(commandLineInterface, mySqlClient, phpSerializer);
     };
 
-    before(prepareStubs);
+    beforeEach(prepareStubs);
 
-    after(() => {
+    afterEach(() => {
         sandbox.reset();
         process.stdout.write = realStdoutWrite;
         console.warn = realConsoleWarn;
