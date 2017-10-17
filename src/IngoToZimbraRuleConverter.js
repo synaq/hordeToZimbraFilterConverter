@@ -47,11 +47,13 @@ class IngoToZimbraRuleConverter {
     }
 
     static actionValue(rule) {
+        const actionTypeWhichRequireActionValues = ['1', '3', '6'];
+
         if (this.isNotificationRule(rule)) {
             return `"${rule['action-value']}" "Delivery notification" "A message has been delivered to your account which matched notification rule \\"${rule.name}\\""`
         }
 
-        return !['1', '3', '6'].includes(rule.action) ? `"${rule['action-value']}"` : '';
+        return !actionTypeWhichRequireActionValues.includes(rule.action) ? `"${rule['action-value']}"` : '';
     }
 
     static isNotificationRule(rule) {
