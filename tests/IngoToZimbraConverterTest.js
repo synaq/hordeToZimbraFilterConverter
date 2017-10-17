@@ -150,7 +150,7 @@ describe('IngoToZimbraConverter', () => {
         });
 
         it('omits the exist statements if the no-exit flag was specified', () => {
-            commandLineInterface.noExit = true;
+            commandLineInterface.exit = false;
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.not.have.been.calledWith('exit\nexit\n');
@@ -1005,7 +1005,7 @@ describe('IngoToZimbraConverter', () => {
         });
 
         it('omits the exit statement if the no-exit flag was specified', () => {
-            commandLineInterface.noExit = true;
+            commandLineInterface.exit = false;
             phpSerializer.unserialize = () => {
                 return [];
             };
@@ -1024,7 +1024,7 @@ describe('IngoToZimbraConverter', () => {
         });
 
         it('omits the exit statement if the no-exit flag was specified', () => {
-            commandLineInterface.noExit = true;
+            commandLineInterface.exit = false;
             databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
@@ -1099,7 +1099,7 @@ describe('IngoToZimbraConverter', () => {
             databasePassword: 'somePassword',
             help: sandbox.stub(),
             debug: true,
-            noExit: false
+            exit: true
         };
         databaseInstance = {
             exec: sandbox.stub().returnsPromise().resolves([{rules: '{s:5:"Rules"}'}])

@@ -131,7 +131,7 @@ class IngoToZimbraRuleConverter {
             .then(results => {
                 if (results.length === 0) {
                     this.writeToDebugLog(`# No Ingo preferences found for ${this.mailbox}`);
-                    if (!this.commandLineInterface.noExit) {
+                    if (this.commandLineInterface.exit) {
                         process.stdout.write('exit\n');
                     }
                     IngoToZimbraRuleConverter.exitWithNormalState();
@@ -143,7 +143,7 @@ class IngoToZimbraRuleConverter {
 
                 if (rules.length === 0) {
                     this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
-                    if (!this.commandLineInterface.noExit) {
+                    if (this.commandLineInterface.exit) {
                         process.stdout.write('exit\n');
                     }
                     IngoToZimbraRuleConverter.exitWithNormalState();
@@ -165,7 +165,7 @@ class IngoToZimbraRuleConverter {
                 });
 
                 // noinspection JSUnresolvedVariable
-                if (!this.commandLineInterface.noExit) {
+                if (this.commandLineInterface.exit) {
                     process.stdout.write('exit\nexit\n');
                 }
                 IngoToZimbraRuleConverter.exitWithNormalState();
