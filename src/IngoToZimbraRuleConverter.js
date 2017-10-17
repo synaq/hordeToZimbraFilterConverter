@@ -22,6 +22,7 @@ class IngoToZimbraRuleConverter {
         this.convertIngoRecordsToZimbraFilters = this.convertIngoRecordsToZimbraFilters.bind(this);
         this.validRuleFilter = this.validRuleFilter.bind(this);
         this.writeRuleBody = this.writeRuleBody.bind(this);
+        this.writeMailboxFooter = this.writeMailboxFooter.bind(this);
     }
 
     configureCommandLineInterface() {
@@ -158,12 +159,15 @@ class IngoToZimbraRuleConverter {
         this.guardThatAtLeastOneRuleWasReturned(rules);
         this.writeMailboxHeader();
         this.writeAllValidRules(rules);
+        this.writeMailboxFooter();
+        IngoToZimbraRuleConverter.exitWithNormalState();
+    }
 
+    writeMailboxFooter() {
         // noinspection JSUnresolvedVariable
         if (this.commandLineInterface.exit) {
             process.stdout.write('exit\nexit\n');
         }
-        IngoToZimbraRuleConverter.exitWithNormalState();
     }
 
     guardThatResultsWereReturned(results) {
