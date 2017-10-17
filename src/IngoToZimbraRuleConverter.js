@@ -146,51 +146,55 @@ class IngoToZimbraRuleConverter {
 
     convertIngoPreferencesInDatabaseToZimbraRules() {
         this.fetchIngoPreferencesFromDatabase().then(results => {
-                if (results.length === 0) {
-                    this.writeToDebugLog(`# No Ingo preferences found for ${this.mailbox}`);
-                    if (this.commandLineInterface.exit) {
-                        process.stdout.write('exit\n');
-                    }
-                    IngoToZimbraRuleConverter.exitWithNormalState();
-                }
-
-                // noinspection JSUnresolvedVariable
-                const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
-                const rules = this.convertSerializedRulesToArray(data);
-
-                if (rules.length === 0) {
-                    this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
-                    if (this.commandLineInterface.exit) {
-                        process.stdout.write('exit\n');
-                    }
-                    IngoToZimbraRuleConverter.exitWithNormalState();
-                }
-
-                // noinspection JSUnresolvedVariable
-                process.stdout.write(`sm ${this.mailbox} \n`);
-
-                rules.filter(this.validRuleFilter).forEach((rule) => {
-                    let conditionsString = '';
-                    // noinspection JSUnresolvedVariable
-                    rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
-                        // noinspection JSUnresolvedVariable
-                        conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${IngoToZimbraRuleConverter.conditionValue(condition)}" `
-                    });
-
-                    // noinspection JSUnresolvedVariable
-                    process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} ${rule.stop === '1' ? 'stop' : ''}\n`);
-                });
-
-                // noinspection JSUnresolvedVariable
-                if (this.commandLineInterface.exit) {
-                    process.stdout.write('exit\nexit\n');
-                }
-                IngoToZimbraRuleConverter.exitWithNormalState();
-            })
+            this.convertIngoRecordsToZimbraFilters(results);
+        })
             .catch(e => {
                 console.error('Error while trying to fetch rules from database: ' + e);
                 IngoToZimbraRuleConverter.exitWithErrorState();
             });
+    }
+
+    convertIngoRecordsToZimbraFilters(results) {
+        if (results.length === 0) {
+            this.writeToDebugLog(`# No Ingo preferences found for ${this.mailbox}`);
+            if (this.commandLineInterface.exit) {
+                process.stdout.write('exit\n');
+            }
+            IngoToZimbraRuleConverter.exitWithNormalState();
+        }
+
+        // noinspection JSUnresolvedVariable
+        const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
+        const rules = this.convertSerializedRulesToArray(data);
+
+        if (rules.length === 0) {
+            this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
+            if (this.commandLineInterface.exit) {
+                process.stdout.write('exit\n');
+            }
+            IngoToZimbraRuleConverter.exitWithNormalState();
+        }
+
+        // noinspection JSUnresolvedVariable
+        process.stdout.write(`sm ${this.mailbox} \n`);
+
+        rules.filter(this.validRuleFilter).forEach((rule) => {
+            let conditionsString = '';
+            // noinspection JSUnresolvedVariable
+            rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
+                // noinspection JSUnresolvedVariable
+                conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${IngoToZimbraRuleConverter.conditionValue(condition)}" `
+            });
+
+            // noinspection JSUnresolvedVariable
+            process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} ${rule.stop === '1' ? 'stop' : ''}\n`);
+        });
+
+        // noinspection JSUnresolvedVariable
+        if (this.commandLineInterface.exit) {
+            process.stdout.write('exit\nexit\n');
+        }
+        IngoToZimbraRuleConverter.exitWithNormalState();
     }
 
     fetchIngoPreferencesFromDatabase() {
