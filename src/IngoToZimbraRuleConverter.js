@@ -205,6 +205,8 @@ class IngoToZimbraRuleConverter {
         this.matcherMap.set('exists', 'contains');
         this.matcherMap.set('greater than', 'over');
         this.matcherMap.set('less than', 'under');
+        this.matcherMap.set('begins with', 'contains');
+        this.matcherMap.set('ends with', 'contains');
     }
 
     initialiseUniqueRuleNameMap() {
@@ -359,10 +361,8 @@ class IngoToZimbraRuleConverter {
     }
 
     conditionMatcher(condition) {
-        let matcher = condition.match;
-        matcher = this.matcherMap.has(matcher) ? this.matcherMap.get(matcher) : matcher;
-
-        return matcher.match(/.* with$/) ? 'contains' : matcher;
+        const matcher = condition.match;
+        return this.matcherMap.has(matcher) ? this.matcherMap.get(matcher) : matcher;
     }
 
     uniqueRuleName(ruleName) {
