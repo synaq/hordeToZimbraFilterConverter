@@ -157,17 +157,14 @@ class IngoToZimbraRuleConverter {
         this.guardThatResultsWereReturned(results);
         const rules = this.arrayOfRulesFromRawResults(results);
         this.guardThatAtLeastOneRuleWasReturned(rules);
-        this.writeMailboxHeader();
-        this.writeAllValidRules(rules);
-        this.writeMailboxFooter();
+        this.writeRuleScript(rules);
         IngoToZimbraRuleConverter.exitWithNormalState();
     }
 
-    writeMailboxFooter() {
-        // noinspection JSUnresolvedVariable
-        if (this.commandLineInterface.exit) {
-            process.stdout.write('exit\nexit\n');
-        }
+    writeRuleScript(rules) {
+        this.writeMailboxHeader();
+        this.writeAllValidRules(rules);
+        this.writeMailboxFooter();
     }
 
     guardThatResultsWereReturned(results) {
@@ -264,6 +261,13 @@ class IngoToZimbraRuleConverter {
 
         // noinspection JSUnresolvedVariable
         process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} ${rule.stop === '1' ? 'stop' : ''}\n`);
+    }
+
+    writeMailboxFooter() {
+        // noinspection JSUnresolvedVariable
+        if (this.commandLineInterface.exit) {
+            process.stdout.write('exit\nexit\n');
+        }
     }
 
     static handleConversionError(e) {
