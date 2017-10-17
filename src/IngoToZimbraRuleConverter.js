@@ -211,7 +211,7 @@ class IngoToZimbraRuleConverter {
         }
 
         // noinspection EqualityComparisonWithCoercionJS
-        if (['2'].includes(rule.action) && rule['action-value'] == '') {
+        if (['2', '4'].includes(rule.action) && rule['action-value'] == '') {
             this.writeToDebugLog(`# Skipping rule "${rule.name}" because it requires an action value but provided none`);
 
             return false;
