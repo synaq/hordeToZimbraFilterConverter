@@ -157,8 +157,7 @@ class IngoToZimbraRuleConverter {
         const rules = this.arrayOfRulesFromRawResults(results);
         this.guardThatAtLeastOneRuleWasReturned(rules);
         this.writeMailboxHeader();
-
-        rules.filter(this.validRuleFilter).forEach(this.writeRuleBody);
+        this.writeAllValidRules(rules);
 
         // noinspection JSUnresolvedVariable
         if (this.commandLineInterface.exit) {
@@ -198,40 +197,8 @@ class IngoToZimbraRuleConverter {
         process.stdout.write(`sm ${this.mailbox} \n`);
     }
 
-    writeRuleBody(rule) {
-        let conditionsString = '';
-        // noinspection JSUnresolvedVariable
-        rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
-            // noinspection JSUnresolvedVariable
-            conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${IngoToZimbraRuleConverter.conditionValue(condition)}" `
-        });
-
-        // noinspection JSUnresolvedVariable
-        process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} ${rule.stop === '1' ? 'stop' : ''}\n`);
-    }
-
-    static handleConversionError(e) {
-        console.error('Error while trying to fetch rules from database: ' + e);
-        IngoToZimbraRuleConverter.exitWithErrorState();
-    }
-
-    fetchIngoPreferencesFromDatabase() {
-        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
-            'FROM horde_prefs ' +
-            'WHERE pref_uid = ? ' +
-            'AND pref_scope = ? ' +
-            'AND pref_name = ?';
-
-        // noinspection JSUnresolvedVariable
-        return this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
-    }
-
-    convertSerializedRulesToArray(data) {
-        return this.phpSerializer.unserialize(data);
-    }
-
-    static fixBrokenSerializedData(results) {
-        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
+    writeAllValidRules(rules) {
+        rules.filter(this.validRuleFilter).forEach(this.writeRuleBody);
     }
 
     validRuleFilter(rule) {
@@ -282,6 +249,42 @@ class IngoToZimbraRuleConverter {
 
         return true;
     };
+
+    writeRuleBody(rule) {
+        let conditionsString = '';
+        // noinspection JSUnresolvedVariable
+        rule.conditions.filter(IngoToZimbraRuleConverter.validConditionFilter).forEach((condition) => {
+            // noinspection JSUnresolvedVariable
+            conditionsString += `${IngoToZimbraRuleConverter.conditionSubject(condition)} ${this.conditionMatcher(condition)} "${IngoToZimbraRuleConverter.conditionValue(condition)}" `
+        });
+
+        // noinspection JSUnresolvedVariable
+        process.stdout.write(`afrl "${this.uniqueRuleName(rule.name)}" ${rule.disable === true ? 'inactive' : 'active'} ${this.combineMap.get(rule.combine)} ${conditionsString} ${this.actionMap.get(rule.action)} ${IngoToZimbraRuleConverter.actionValue(rule)} ${rule.stop === '1' ? 'stop' : ''}\n`);
+    }
+
+    static handleConversionError(e) {
+        console.error('Error while trying to fetch rules from database: ' + e);
+        IngoToZimbraRuleConverter.exitWithErrorState();
+    }
+
+    fetchIngoPreferencesFromDatabase() {
+        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
+            'FROM horde_prefs ' +
+            'WHERE pref_uid = ? ' +
+            'AND pref_scope = ? ' +
+            'AND pref_name = ?';
+
+        // noinspection JSUnresolvedVariable
+        return this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
+    }
+
+    convertSerializedRulesToArray(data) {
+        return this.phpSerializer.unserialize(data);
+    }
+
+    static fixBrokenSerializedData(results) {
+        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
+    }
 
     static validConditionFilter(condition) {
         const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under'];
