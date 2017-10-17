@@ -1015,6 +1015,32 @@ describe('IngoToZimbraConverter', () => {
         });
     });
 
+    context('when no Ingo preferences data is found at all', () => {
+        it('logs the problem and skips the mailbox entirely', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# No Ingo preferences found for foo@bar.com');
+        });
+
+        beforeEach(() => {
+            prepareStubs();
+
+            realStdErrorWrite = process.stderr.write;
+            process.stderr.write = sandbox.spy();
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+        });
+
+        afterEach(() => {
+            resetStubs();
+            process.stderr.write = realStdErrorWrite;
+        });
+
+        let realStdErrorWrite;
+    });
+
     const prepareStubs = () => {
         returnedRules = [
             {
@@ -1081,14 +1107,15 @@ describe('IngoToZimbraConverter', () => {
         converter = new IngoToZimbraConverter(commandLineInterface, mySqlClient, phpSerializer);
     };
 
-    beforeEach(prepareStubs);
-
-    afterEach(() => {
+    const resetStubs = function () {
         sandbox.reset();
         process.stdout.write = realStdoutWrite;
         console.warn = realConsoleWarn;
         process.exit = realExit;
-    });
+    };
+
+    beforeEach(prepareStubs);
+    afterEach(resetStubs);
 
     let realStdoutWrite = process.stdout.write;
     let realConsoleWarn = console.warn;
