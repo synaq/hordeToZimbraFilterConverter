@@ -221,6 +221,7 @@ class IngoToZimbraRuleConverter {
         this.matcherMap.set('begins with', 'contains');
         this.matcherMap.set('ends with', 'contains');
         this.matcherMap.set('not begins with', 'not_contains');
+        this.matcherMap.set('not ends with', 'not_contains');
     }
 
     initialiseUniqueRuleNameMap() {
