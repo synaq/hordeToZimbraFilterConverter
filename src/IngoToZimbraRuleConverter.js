@@ -13,9 +13,7 @@ class IngoToZimbraRuleConverter {
     initialiseApplication() {
         this.bindExecutionContexts();
         this.configureCommandLineInterface();
-
-        // noinspection JSUnresolvedVariable
-        this.commandLineInterface.parse(process.argv);
+        this.parseCommandLineArguments();
         this.outputHelpIfNoMailboxWasSpecified();
     }
 
@@ -37,6 +35,11 @@ class IngoToZimbraRuleConverter {
             .option('-n, --no-exit', 'Suppress writing of exit statements')
             .option('-D, --debug', 'Write warnings when skipping invalid or unwanted rules')
             .action(this.prepareToFetchMailboxData);
+    }
+
+    parseCommandLineArguments() {
+        // noinspection JSUnresolvedVariable
+        this.commandLineInterface.parse(process.argv);
     }
 
     prepareToFetchMailboxData(mailbox) {
