@@ -829,6 +829,31 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Lowercase Size Rule" active all size under "2M"  discard  \n');
         });
+
+        it('translates size rules with spaces into the correct Zimbra format', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'less than',
+                            value: '2 kb'
+                        }
+                    ],
+                    name: 'A Spaced Size Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Spaced Size Rule" active all size under "2K"  discard  \n');
+        });
     });
 
     context('when invalid or superfluous rules are returned', () => {
