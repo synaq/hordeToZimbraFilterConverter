@@ -11,13 +11,17 @@ class IngoToZimbraRuleConverter {
     }
 
     initialiseApplication() {
-        this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
-        this.validRuleFilter = this.validRuleFilter.bind(this);
+        this.bindExecutionContexts();
         this.configureCommandLineInterface();
 
         // noinspection JSUnresolvedVariable
         this.commandLineInterface.parse(process.argv);
         this.outputHelpIfNoMailboxWasSpecified();
+    }
+
+    bindExecutionContexts() {
+        this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
+        this.validRuleFilter = this.validRuleFilter.bind(this);
     }
 
     configureCommandLineInterface() {
