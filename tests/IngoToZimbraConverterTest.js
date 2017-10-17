@@ -854,6 +854,31 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Spaced Size Rule" active all size under "2K"  discard  \n');
         });
+
+        it('rounds up fractional size rules to the nearest full denominator', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'less than',
+                            value: '0.01'
+                        }
+                    ],
+                    name: 'A Spaced Size Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Spaced Size Rule" active all size under "1"  discard  \n');
+        });
     });
 
     context('when invalid or superfluous rules are returned', () => {
