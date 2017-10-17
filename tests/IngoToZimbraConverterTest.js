@@ -605,6 +605,66 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-greater.com"  keep  \n');
         });
 
+        it('ignores unsupported "less" conditions', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'less',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-less.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-less.com"  keep  \n');
+        });
+
+        it('ignores unsupported "less than or equal to" conditions', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'less than or equal to',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-less-equal.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-less-equal.com"  keep  \n');
+        });
+
         it('remaps "begins with" matches to "contains"', () => {
             returnedRules = [
                 {
