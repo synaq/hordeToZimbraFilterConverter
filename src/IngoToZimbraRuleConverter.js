@@ -145,14 +145,7 @@ class IngoToZimbraRuleConverter {
     }
 
     convertIngoPreferencesInDatabaseToZimbraRules() {
-        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
-            'FROM horde_prefs ' +
-            'WHERE pref_uid = ? ' +
-            'AND pref_scope = ? ' +
-            'AND pref_name = ?';
-        // noinspection JSUnresolvedVariable
-        this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
-            .then(results => {
+        this.fetchIngoPreferencesFromDatabase().then(results => {
                 if (results.length === 0) {
                     this.writeToDebugLog(`# No Ingo preferences found for ${this.mailbox}`);
                     if (this.commandLineInterface.exit) {
@@ -198,6 +191,17 @@ class IngoToZimbraRuleConverter {
                 console.error('Error while trying to fetch rules from database: ' + e);
                 IngoToZimbraRuleConverter.exitWithErrorState();
             });
+    }
+
+    fetchIngoPreferencesFromDatabase() {
+        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
+            'FROM horde_prefs ' +
+            'WHERE pref_uid = ? ' +
+            'AND pref_scope = ? ' +
+            'AND pref_name = ?';
+
+        // noinspection JSUnresolvedVariable
+        return this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
     }
 
     convertSerializedRulesToArray(data) {
