@@ -104,8 +104,7 @@ class IngoToZimbraRuleConverter {
         this.initialiseRuleCombinationMap();
         this.initialiseActionMap();
         this.initialiseConditionMatcherMap();
-
-        this.uniqueRuleNameMap = new Map();
+        this.initialiseUniqueRuleNameMap();
     }
 
     initialiseRuleCombinationMap() {
@@ -134,6 +133,10 @@ class IngoToZimbraRuleConverter {
         this.matcherMap.set('exists', 'contains');
         this.matcherMap.set('greater than', 'over');
         this.matcherMap.set('less than', 'under');
+    }
+
+    initialiseUniqueRuleNameMap() {
+        this.uniqueRuleNameMap = new Map();
     }
 
     initialiseFlags() {
