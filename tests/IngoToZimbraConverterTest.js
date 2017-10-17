@@ -253,6 +253,31 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "Rule with bullshit value" active all address "From" all is "\\"bar@baz.com\\""  keep  \n');
         });
 
+        it('does not blindly double escape double quotes if they are already escaped', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: '\\"bar@baz.com\\"'
+                        }
+                    ],
+                    name: 'Rule with bullshit value',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "Rule with bullshit value" active all address "From" all is "\\"bar@baz.com\\""  keep  \n');
+        });
+
         it('translates action 1 to a keep rule', () => {
             returnedRules = [
                 {
