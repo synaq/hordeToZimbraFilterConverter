@@ -102,16 +102,7 @@ class IngoToZimbraRuleConverter {
 
     initialiseMaps() {
         this.initialiseRuleCombinationMap();
-
-        this.actionMap = new Map();
-        this.actionMap.set('1', 'keep');
-        this.actionMap.set('2', 'fileinto');
-        this.actionMap.set('3', 'discard');
-        this.actionMap.set('4', 'redirect');
-        this.actionMap.set('5', 'keep redirect');
-        this.actionMap.set('6', 'discard');
-        this.actionMap.set('11', 'keep fileinto');
-        this.actionMap.set('13', 'notify');
+        this.initialiseActionMap();
 
         this.matcherMap = new Map();
         this.matcherMap.set('equal', 'is');
@@ -128,6 +119,18 @@ class IngoToZimbraRuleConverter {
         this.combineMap = new Map();
         this.combineMap.set('1', 'all');
         this.combineMap.set('2', 'any');
+    }
+
+    initialiseActionMap() {
+        this.actionMap = new Map();
+        this.actionMap.set('1', 'keep');
+        this.actionMap.set('2', 'fileinto');
+        this.actionMap.set('3', 'discard');
+        this.actionMap.set('4', 'redirect');
+        this.actionMap.set('5', 'keep redirect');
+        this.actionMap.set('6', 'discard');
+        this.actionMap.set('11', 'keep fileinto');
+        this.actionMap.set('13', 'notify');
     }
 
     initialiseFlags() {
