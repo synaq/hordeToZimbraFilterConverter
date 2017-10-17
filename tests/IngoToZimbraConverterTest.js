@@ -1023,6 +1023,14 @@ describe('IngoToZimbraConverter', () => {
             expect(console.warn).to.have.been.calledWith('# No Ingo preferences found for foo@bar.com');
         });
 
+        it('omits the exit statement if the no-exit flag was specified', () => {
+            commandLineInterface.noExit = true;
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.not.have.been.calledWith('exit\n');
+        });
+
         beforeEach(() => {
             prepareStubs();
 
