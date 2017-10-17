@@ -368,10 +368,14 @@ class IngoToZimbraRuleConverter {
     uniqueRuleName(ruleName) {
         ruleName = IngoToZimbraRuleConverter.escapeRuleNamesEndingWithBackslashes(ruleName);
 
-        const ruleNumber = this.uniqueRuleNameMap.has(ruleName) ? this.uniqueRuleNameMap.get(ruleName) + 1 : 1;
+        const ruleNumber = this.nextRuleNumberForRuleName(ruleName);
         this.uniqueRuleNameMap.set(ruleName, ruleNumber);
 
         return ruleName + (ruleNumber > 1 ? ` ${ruleNumber}` : '');
+    }
+
+    nextRuleNumberForRuleName(ruleName) {
+        return this.uniqueRuleNameMap.has(ruleName) ? this.uniqueRuleNameMap.get(ruleName) + 1 : 1;
     }
 
     static escapeRuleNamesEndingWithBackslashes(ruleName) {
