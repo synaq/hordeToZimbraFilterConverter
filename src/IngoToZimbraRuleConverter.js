@@ -1,6 +1,7 @@
 'use strict';
 
 require('module');
+const utf8length = require('utf8-length');
 
 class IngoToZimbraRuleConverter {
     constructor(commandLineInterface, mySqlClient, phpSerializer) {
@@ -181,7 +182,7 @@ class IngoToZimbraRuleConverter {
     }
 
     static fixBrokenSerializedData(results) {
-        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${value.length}:"${value}";`);
+        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
     }
 
     validRuleFilter(rule) {

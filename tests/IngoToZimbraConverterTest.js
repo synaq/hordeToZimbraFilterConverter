@@ -134,6 +134,14 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(phpSerializer.unserialize).to.have.been.calledWith(rules);
         });
+
+        it('correctly calculates the lengths of unicode strings when passing them to the polyfill', () => {
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: 's:33:"String with multibyte character é";'}]);
+            phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(phpSerializer.unserialize).to.have.been.calledWith('s:35:"String with multibyte character é";');
+        });
     });
 
     context('when valid rules are returned', () => {
