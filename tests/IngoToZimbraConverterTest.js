@@ -110,7 +110,7 @@ describe('IngoToZimbraConverter', () => {
             databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
-            expect(rules.normalize).to.have.been.calledWith('NFKD');
+            expect(rules.normalize).to.have.been.calledWith('NFC');
         });
 
         it('fixes the incorrect string lengths in the rule string after normalizing it', () => {
@@ -140,7 +140,7 @@ describe('IngoToZimbraConverter', () => {
             phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
-            expect(phpSerializer.unserialize).to.have.been.calledWith('s:35:"String with multibyte character é";');
+            expect(phpSerializer.unserialize).to.have.been.calledWith('s:34:"String with multibyte character é";');
         });
     });
 

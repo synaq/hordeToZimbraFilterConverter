@@ -16,7 +16,7 @@ class IngoToZimbraRuleConverter {
     }
 
     static fixBrokenSerializedData(results) {
-        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
+        return results[0].rules.normalize('NFC').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
     }
 
     static validConditionFilter(condition) {
