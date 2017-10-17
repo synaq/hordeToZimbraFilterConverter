@@ -813,6 +813,36 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-under.com"  keep  \n');
         });
 
+        it('ignores unsupported "greater than" conditions on fields other than size', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'greater than',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-greater-than-not-size.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-greater-than-not-size.com"  keep  \n');
+        });
+
         it('remaps "begins with" matches to "contains"', () => {
             returnedRules = [
                 {

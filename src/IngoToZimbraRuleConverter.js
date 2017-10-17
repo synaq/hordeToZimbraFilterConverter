@@ -20,7 +20,13 @@ class IngoToZimbraRuleConverter {
     }
 
     static validConditionFilter(condition) {
-        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under'];
+        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under', 'greater than'];
+        const sizeMatchers = ['greater than', 'less than'];
+
+        if (condition.field.toLowerCase() === 'size') {
+            return sizeMatchers.includes(condition.match);
+        }
+
         return condition.field !== '' && condition.value !== '' && !unsupportedMatchers.includes(condition.match);
     };
 
