@@ -53,7 +53,7 @@ class IngoToZimbraRuleConverter {
     }
 
     static properlyFormattedSizeComparator(condition) {
-        return condition.value.toUpperCase().replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number));
+        return condition.value.toUpperCase().replace(/([A-Za-z])+/g, (match) => match.charAt(0)).replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number));
     }
 
     static properlyEscapedValueComparator(condition) {
