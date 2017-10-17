@@ -1216,6 +1216,30 @@ describe('IngoToZimbraConverter', () => {
             expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Redirect Rule" because it requires an action value but provided none');
         });
 
+        it('skips rules with action 11 which have no action value', () => {
+            returnedRules = [
+                {
+                    action: '11',
+                    'action-value': '',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'subject',
+                            match: 'contains',
+                            value: 'Something'
+                        }
+                    ],
+                    name: 'Some Keep And File Rule'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Keep And File Rule" because it requires an action value but provided none');
+        });
+
         it('skips flag rules as those are claimed to be supported by Zimbra documentation, but rejected in practice', () => {
             returnedRules = [
                 {
