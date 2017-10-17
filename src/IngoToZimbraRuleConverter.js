@@ -157,9 +157,7 @@ class IngoToZimbraRuleConverter {
         this.guardThatResultsWereReturned(results);
         const rules = this.arrayOfRulesFromRawResults(results);
         this.guardThatAtLeastOneRuleWasReturned(rules);
-
-        // noinspection JSUnresolvedVariable
-        process.stdout.write(`sm ${this.mailbox} \n`);
+        this.writeMailboxHeader();
 
         rules.filter(this.validRuleFilter).forEach((rule) => {
             let conditionsString = '';
@@ -178,6 +176,11 @@ class IngoToZimbraRuleConverter {
             process.stdout.write('exit\nexit\n');
         }
         IngoToZimbraRuleConverter.exitWithNormalState();
+    }
+
+    writeMailboxHeader() {
+        // noinspection JSUnresolvedVariable
+        process.stdout.write(`sm ${this.mailbox} \n`);
     }
 
     guardThatAtLeastOneRuleWasReturned(rules) {
