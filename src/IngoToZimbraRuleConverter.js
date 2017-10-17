@@ -49,7 +49,7 @@ class IngoToZimbraRuleConverter {
         this.initialiseDatabaseConnection();
         this.initialiseMaps();
         this.initialiseFlags();
-        this.convertIngoPreferencesDataToZimbraRules();
+        this.convertIngoPreferencesInDatabaseToZimbraRules();
     }
 
     outputHelpIfNoMailboxWasSpecified() {
@@ -144,7 +144,7 @@ class IngoToZimbraRuleConverter {
         this.debug = this.commandLineInterface.debug;
     }
 
-    convertIngoPreferencesDataToZimbraRules() {
+    convertIngoPreferencesInDatabaseToZimbraRules() {
         const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
             'FROM horde_prefs ' +
             'WHERE pref_uid = ? ' +
