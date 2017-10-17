@@ -10,6 +10,60 @@ class IngoToZimbraRuleConverter {
         this.phpSerializer = phpSerializer;
     }
 
+    static handleConversionError(e) {
+        console.error('Error while trying to fetch rules from database: ' + e);
+        IngoToZimbraRuleConverter.exitWithErrorState();
+    }
+
+    static fixBrokenSerializedData(results) {
+        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
+    }
+
+    static validConditionFilter(condition) {
+        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under'];
+        return condition.field !== '' && condition.value !== '' && !unsupportedMatchers.includes(condition.match);
+    };
+
+    static conditionSubject(condition) {
+        const addressFields = ['from', 'to', 'cc'];
+        const lowerCaseFields = ['subject'];
+
+        // noinspection JSUnresolvedVariable
+        let fieldName = condition.field;
+
+        if (lowerCaseFields.includes(fieldName.toLowerCase())) {
+            fieldName = fieldName.toLowerCase();
+        }
+
+        if (fieldName.toLowerCase() === 'size') {
+            return `size`
+        }
+
+        return `${addressFields.includes(fieldName.toLowerCase()) ? 'address' : 'header'} "${fieldName}" ${addressFields.includes(fieldName.toLowerCase()) ? 'all' : ''}`
+    }
+
+    static conditionValue(condition) {
+        return condition.field.toLowerCase() === 'size' ? condition.value.toUpperCase().replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number)) : condition.value.replace(/\\?"/g, '\\"');
+    }
+
+    static actionValue(rule) {
+        if (rule.action === '13') {
+            return `"${rule['action-value']}" "Delivery notification" "A message has been delivered to your account which matched notification rule \\"${rule.name}\\""`
+        }
+
+        return !['1', '3', '6'].includes(rule.action) ? `"${rule['action-value']}"` : '';
+    }
+
+    static exitWithNormalState() {
+        // noinspection JSUnresolvedVariable, JSUnresolvedFunction
+        process.exit(0);
+    }
+
+    static exitWithErrorState() {
+        // noinspection JSUnresolvedVariable, JSUnresolvedFunction
+        process.exit(1);
+    }
+
     initialiseApplication() {
         this.bindExecutionContexts();
         this.configureCommandLineInterface();
@@ -154,6 +208,17 @@ class IngoToZimbraRuleConverter {
             .catch(IngoToZimbraRuleConverter.handleConversionError);
     }
 
+    fetchIngoPreferencesFromDatabase() {
+        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
+            'FROM horde_prefs ' +
+            'WHERE pref_uid = ? ' +
+            'AND pref_scope = ? ' +
+            'AND pref_name = ?';
+
+        // noinspection JSUnresolvedVariable
+        return this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
+    }
+
     convertIngoRecordsToZimbraFilters(results) {
         this.writeRuleScript(this.rulesFromResults(results));
         IngoToZimbraRuleConverter.exitWithNormalState();
@@ -275,51 +340,8 @@ class IngoToZimbraRuleConverter {
         }
     }
 
-    static handleConversionError(e) {
-        console.error('Error while trying to fetch rules from database: ' + e);
-        IngoToZimbraRuleConverter.exitWithErrorState();
-    }
-
-    fetchIngoPreferencesFromDatabase() {
-        const query = 'SELECT pref_uid AS mailbox_id, pref_value as rules ' +
-            'FROM horde_prefs ' +
-            'WHERE pref_uid = ? ' +
-            'AND pref_scope = ? ' +
-            'AND pref_name = ?';
-
-        // noinspection JSUnresolvedVariable
-        return this.db.exec(query, [this.mailboxId, 'ingo', 'rules'])
-    }
-
     convertSerializedRulesToArray(data) {
         return this.phpSerializer.unserialize(data);
-    }
-
-    static fixBrokenSerializedData(results) {
-        return results[0].rules.normalize('NFKD').replace(/s:(\d+):"(.*?)";/gu, (match, length, value) => `s:${utf8length(value)}:"${value}";`);
-    }
-
-    static validConditionFilter(condition) {
-        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under'];
-        return condition.field !== '' && condition.value !== '' && !unsupportedMatchers.includes(condition.match);
-    };
-
-    static conditionSubject(condition) {
-        const addressFields = ['from', 'to', 'cc'];
-        const lowerCaseFields = ['subject'];
-
-        // noinspection JSUnresolvedVariable
-        let fieldName = condition.field;
-
-        if (lowerCaseFields.includes(fieldName.toLowerCase())) {
-            fieldName = fieldName.toLowerCase();
-        }
-
-        if (fieldName.toLowerCase() === 'size') {
-            return `size`
-        }
-
-        return `${addressFields.includes(fieldName.toLowerCase()) ? 'address' : 'header'} "${fieldName}" ${addressFields.includes(fieldName.toLowerCase()) ? 'all' : ''}`
     }
 
     conditionMatcher(condition) {
@@ -327,18 +349,6 @@ class IngoToZimbraRuleConverter {
         matcher = this.matcherMap.has(matcher) ? this.matcherMap.get(matcher) : matcher;
 
         return matcher.match(/.* with$/) ? 'contains' : matcher;
-    }
-
-    static conditionValue(condition) {
-        return condition.field.toLowerCase() === 'size' ? condition.value.toUpperCase().replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number)) : condition.value.replace(/\\?"/g, '\\"');
-    }
-
-    static actionValue(rule) {
-        if (rule.action === '13') {
-            return `"${rule['action-value']}" "Delivery notification" "A message has been delivered to your account which matched notification rule \\"${rule.name}\\""`
-        }
-
-        return !['1', '3', '6'].includes(rule.action) ? `"${rule['action-value']}"` : '';
     }
 
     uniqueRuleName(ruleName) {
@@ -350,16 +360,6 @@ class IngoToZimbraRuleConverter {
         this.uniqueRuleNameMap.set(ruleName, ruleNumber);
 
         return ruleName + (ruleNumber > 1 ? ` ${ruleNumber}` : '');
-    }
-
-    static exitWithNormalState() {
-        // noinspection JSUnresolvedVariable, JSUnresolvedFunction
-        process.exit(0);
-    }
-
-    static exitWithErrorState() {
-        // noinspection JSUnresolvedVariable, JSUnresolvedFunction
-        process.exit(1);
     }
 
     writeToDebugLog(message) {
