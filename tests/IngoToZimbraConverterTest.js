@@ -1017,6 +1017,7 @@ describe('IngoToZimbraConverter', () => {
 
     context('when no Ingo preferences data is found at all', () => {
         it('logs the problem and skips the mailbox entirely', () => {
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# No Ingo preferences found for foo@bar.com');
@@ -1027,7 +1028,6 @@ describe('IngoToZimbraConverter', () => {
 
             realStdErrorWrite = process.stderr.write;
             process.stderr.write = sandbox.spy();
-            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
             phpSerializer.unserialize = () => {
                 return [];
             };
