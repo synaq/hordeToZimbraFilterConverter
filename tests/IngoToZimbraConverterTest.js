@@ -64,6 +64,12 @@ describe('IngoToZimbraConverter', () => {
             expect(commandLineInterface.option).to.have.been.calledWith('-p, --database-password <password>', 'Database password');
         });
 
+        it('expects the no-exit flag', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator
+            expect(commandLineInterface.option).to.have.been.calledWith('-n, --no-exit', 'Suppress writing of exit statements');
+        });
+
         it('expects the debug flag', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable, JSAnnotator

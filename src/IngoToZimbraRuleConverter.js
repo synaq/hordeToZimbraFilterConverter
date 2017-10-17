@@ -22,6 +22,7 @@ class IngoToZimbraRuleConverter {
             .option('-d, --database <database>', 'Database name (default horde)')
             .option('-u, --database-user <user>', 'Database user name')
             .option('-p, --database-password <password>', 'Database password')
+            .option('-n, --no-exit', 'Suppress writing of exit statements')
             .option('-D, --debug', 'Write warnings when skipping invalid or unwanted rules')
             .action(this.prepareToFetchMailboxData);
 
