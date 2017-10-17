@@ -13,7 +13,14 @@ class IngoToZimbraRuleConverter {
     initialiseApplication() {
         this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
         this.validRuleFilter = this.validRuleFilter.bind(this);
+        this.configureCommandLineInterface();
 
+        // noinspection JSUnresolvedVariable
+        this.commandLineInterface.parse(process.argv);
+        this.outputHelpIfNoMailboxWasSpecified();
+    }
+
+    configureCommandLineInterface() {
         // noinspection JSAnnotator
         this.commandLineInterface.version('0.0.1')
             .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
@@ -26,10 +33,6 @@ class IngoToZimbraRuleConverter {
             .option('-n, --no-exit', 'Suppress writing of exit statements')
             .option('-D, --debug', 'Write warnings when skipping invalid or unwanted rules')
             .action(this.prepareToFetchMailboxData);
-
-        // noinspection JSUnresolvedVariable
-        this.commandLineInterface.parse(process.argv);
-        this.outputHelpIfNoMailboxWasSpecified();
     }
 
     prepareToFetchMailboxData(mailbox) {
