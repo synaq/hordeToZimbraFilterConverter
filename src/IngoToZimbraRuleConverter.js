@@ -234,7 +234,7 @@ class IngoToZimbraRuleConverter {
     };
 
     static validConditionFilter(condition) {
-        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over'];
+        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under'];
         return condition.field !== '' && condition.value !== '' && !unsupportedMatchers.includes(condition.match);
     };
 
