@@ -20,6 +20,7 @@ class IngoToZimbraRuleConverter {
     bindExecutionContexts() {
         this.prepareToFetchMailboxData = this.prepareToFetchMailboxData.bind(this);
         this.convertIngoRecordsToZimbraFilters = this.convertIngoRecordsToZimbraFilters.bind(this);
+        this.rulesFromResults = this.rulesFromResults.bind(this);
         this.validRuleFilter = this.validRuleFilter.bind(this);
         this.writeRuleBody = this.writeRuleBody.bind(this);
         this.writeMailboxFooter = this.writeMailboxFooter.bind(this);
@@ -154,17 +155,15 @@ class IngoToZimbraRuleConverter {
     }
 
     convertIngoRecordsToZimbraFilters(results) {
-        this.guardThatResultsWereReturned(results);
-        const rules = this.arrayOfRulesFromRawResults(results);
-        this.guardThatAtLeastOneRuleWasReturned(rules);
-        this.writeRuleScript(rules);
+        this.writeRuleScript(this.rulesFromResults(results));
         IngoToZimbraRuleConverter.exitWithNormalState();
     }
 
-    writeRuleScript(rules) {
-        this.writeMailboxHeader();
-        this.writeAllValidRules(rules);
-        this.writeMailboxFooter();
+    rulesFromResults(results) {
+        this.guardThatResultsWereReturned(results);
+        const rules = this.arrayOfRulesFromRawResults(results);
+        this.guardThatAtLeastOneRuleWasReturned(rules);
+        return rules;
     }
 
     guardThatResultsWereReturned(results) {
@@ -191,6 +190,12 @@ class IngoToZimbraRuleConverter {
             }
             IngoToZimbraRuleConverter.exitWithNormalState();
         }
+    }
+
+    writeRuleScript(rules) {
+        this.writeMailboxHeader();
+        this.writeAllValidRules(rules);
+        this.writeMailboxFooter();
     }
 
     writeMailboxHeader() {
