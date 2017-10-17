@@ -43,11 +43,15 @@ class IngoToZimbraRuleConverter {
     }
 
     static conditionValue(condition) {
-        return condition.field.toLowerCase() === 'size' ? this.properlyFormattedSizeComparator(condition) : condition.value.replace(/\\?"/g, '\\"');
+        return condition.field.toLowerCase() === 'size' ? this.properlyFormattedSizeComparator(condition) : this.properlyEscapedValueComparator(condition);
     }
 
     static properlyFormattedSizeComparator(condition) {
         return condition.value.toUpperCase().replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number));
+    }
+
+    static properlyEscapedValueComparator(condition) {
+        return condition.value.replace(/\\?"/g, '\\"');
     }
 
     static actionValue(rule) {
