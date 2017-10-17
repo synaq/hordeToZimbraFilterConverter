@@ -47,11 +47,15 @@ class IngoToZimbraRuleConverter {
     }
 
     static actionValue(rule) {
-        if (rule.action === '13') {
+        if (this.isNotificationRule(rule)) {
             return `"${rule['action-value']}" "Delivery notification" "A message has been delivered to your account which matched notification rule \\"${rule.name}\\""`
         }
 
         return !['1', '3', '6'].includes(rule.action) ? `"${rule['action-value']}"` : '';
+    }
+
+    static isNotificationRule(rule) {
+        return rule.action === '13';
     }
 
     static exitWithNormalState() {
