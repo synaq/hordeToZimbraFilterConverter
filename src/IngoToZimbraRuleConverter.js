@@ -155,10 +155,7 @@ class IngoToZimbraRuleConverter {
 
     convertIngoRecordsToZimbraFilters(results) {
         this.guardThatResultsWereReturned(results);
-
-        // noinspection JSUnresolvedVariable
-        const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
-        const rules = this.convertSerializedRulesToArray(data);
+        const rules = this.arrayOfRulesFromRawResults(results);
 
         if (rules.length === 0) {
             this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
@@ -188,6 +185,12 @@ class IngoToZimbraRuleConverter {
             process.stdout.write('exit\nexit\n');
         }
         IngoToZimbraRuleConverter.exitWithNormalState();
+    }
+
+    arrayOfRulesFromRawResults(results) {
+        // noinspection JSUnresolvedVariable
+        const data = IngoToZimbraRuleConverter.fixBrokenSerializedData(results);
+        return this.convertSerializedRulesToArray(data);
     }
 
     guardThatResultsWereReturned(results) {
