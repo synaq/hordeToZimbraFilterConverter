@@ -149,8 +149,7 @@ class IngoToZimbraRuleConverter {
             this.convertIngoRecordsToZimbraFilters(results);
         })
             .catch(e => {
-                console.error('Error while trying to fetch rules from database: ' + e);
-                IngoToZimbraRuleConverter.exitWithErrorState();
+                IngoToZimbraRuleConverter.handleConversionError(e);
             });
     }
 
@@ -195,6 +194,11 @@ class IngoToZimbraRuleConverter {
             process.stdout.write('exit\nexit\n');
         }
         IngoToZimbraRuleConverter.exitWithNormalState();
+    }
+
+    static handleConversionError(e) {
+        console.error('Error while trying to fetch rules from database: ' + e);
+        IngoToZimbraRuleConverter.exitWithErrorState();
     }
 
     fetchIngoPreferencesFromDatabase() {
