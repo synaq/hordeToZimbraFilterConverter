@@ -156,14 +156,7 @@ class IngoToZimbraRuleConverter {
     convertIngoRecordsToZimbraFilters(results) {
         this.guardThatResultsWereReturned(results);
         const rules = this.arrayOfRulesFromRawResults(results);
-
-        if (rules.length === 0) {
-            this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
-            if (this.commandLineInterface.exit) {
-                process.stdout.write('exit\n');
-            }
-            IngoToZimbraRuleConverter.exitWithNormalState();
-        }
+        this.guardThatAtLeastOneRuleWasReturned(rules);
 
         // noinspection JSUnresolvedVariable
         process.stdout.write(`sm ${this.mailbox} \n`);
@@ -185,6 +178,16 @@ class IngoToZimbraRuleConverter {
             process.stdout.write('exit\nexit\n');
         }
         IngoToZimbraRuleConverter.exitWithNormalState();
+    }
+
+    guardThatAtLeastOneRuleWasReturned(rules) {
+        if (rules.length === 0) {
+            this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
+            if (this.commandLineInterface.exit) {
+                process.stdout.write('exit\n');
+            }
+            IngoToZimbraRuleConverter.exitWithNormalState();
+        }
     }
 
     arrayOfRulesFromRawResults(results) {
