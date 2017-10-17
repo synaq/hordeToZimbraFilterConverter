@@ -994,6 +994,25 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# No rules found for foo@bar.com');
         });
+
+        it('writes an exit statement so that the script would still terminate properly', () => {
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('exit\n');
+        });
+
+        it('omits the exit statement if the no-exit flag was specified', () => {
+            commandLineInterface.noExit = true;
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.not.have.been.calledWith('exit\n');
+        });
     });
 
     const prepareStubs = () => {

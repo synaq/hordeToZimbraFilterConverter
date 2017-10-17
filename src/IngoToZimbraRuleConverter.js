@@ -143,7 +143,9 @@ class IngoToZimbraRuleConverter {
                 if (rules.length === 0) {
                     this.writeToDebugLog(`# No rules found for ${this.mailbox}`);
                     // noinspection JSUnresolvedVariable
-                    process.stdout.write('exit\n');
+                    if (!this.commandLineInterface.noExit) {
+                        process.stdout.write('exit\n');
+                    }
                     IngoToZimbraRuleConverter.exitWithNormalState();
                 }
 
