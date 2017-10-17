@@ -78,6 +78,13 @@ class IngoToZimbraRuleConverter {
         process.exit(1);
     }
 
+    static escapeRuleNamesEndingWithBackslashes(ruleName) {
+        if (ruleName.slice(-1) === '\\') {
+            ruleName += '\\';
+        }
+        return ruleName;
+    }
+
     initialiseApplication() {
         this.bindExecutionContexts();
         this.configureCommandLineInterface();
@@ -369,20 +376,17 @@ class IngoToZimbraRuleConverter {
         ruleName = IngoToZimbraRuleConverter.escapeRuleNamesEndingWithBackslashes(ruleName);
 
         const ruleNumber = this.nextRuleNumberForRuleName(ruleName);
-        this.uniqueRuleNameMap.set(ruleName, ruleNumber);
+        this.setCurrentNumberForRuleNameToNumber(ruleName, ruleNumber);
 
         return ruleName + (ruleNumber > 1 ? ` ${ruleNumber}` : '');
     }
 
-    nextRuleNumberForRuleName(ruleName) {
-        return this.uniqueRuleNameMap.has(ruleName) ? this.uniqueRuleNameMap.get(ruleName) + 1 : 1;
+    setCurrentNumberForRuleNameToNumber(ruleName, ruleNumber) {
+        this.uniqueRuleNameMap.set(ruleName, ruleNumber);
     }
 
-    static escapeRuleNamesEndingWithBackslashes(ruleName) {
-        if (ruleName.slice(-1) === '\\') {
-            ruleName += '\\';
-        }
-        return ruleName;
+    nextRuleNumberForRuleName(ruleName) {
+        return this.uniqueRuleNameMap.has(ruleName) ? this.uniqueRuleNameMap.get(ruleName) + 1 : 1;
     }
 
     writeToDebugLog(message) {
