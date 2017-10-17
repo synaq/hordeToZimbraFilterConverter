@@ -265,7 +265,7 @@ class IngoToZimbraRuleConverter {
     }
 
     static conditionValue(condition) {
-        return condition.field.toLowerCase() === 'size' ? condition.value.toUpperCase().replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number)) : condition.value;
+        return condition.field.toLowerCase() === 'size' ? condition.value.toUpperCase().replace(/[B\s]/g, '').replace(/[0-9.]+/g, (number) => Math.ceil(number)) : condition.value.replace(/"/g, '\\"');
     }
 
     static actionValue(rule) {
