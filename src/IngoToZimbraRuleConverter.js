@@ -22,11 +22,15 @@ class IngoToZimbraRuleConverter {
     static validConditionFilter(condition) {
         const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under', 'greater than'];
         const sizeMatchers = ['greater than', 'less than'];
-        return IngoToZimbraRuleConverter.isConditionComplete(condition) && ((condition.field.toLowerCase() === 'size') ? sizeMatchers.includes(condition.match) : !unsupportedMatchers.includes(condition.match));
+        return IngoToZimbraRuleConverter.isConditionComplete(condition) && (IngoToZimbraRuleConverter.isSizeCondition(condition) ? sizeMatchers.includes(condition.match) : !unsupportedMatchers.includes(condition.match));
     };
 
     static isConditionComplete(condition) {
         return condition.field !== '' && condition.value !== '';
+    }
+
+    static isSizeCondition(condition) {
+        return (condition.field.toLowerCase() === 'size');
     }
 
     static conditionSubject(condition) {
