@@ -20,8 +20,10 @@ class IngoToZimbraRuleConverter {
     }
 
     static validConditionFilter(condition) {
-        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under', 'greater than'];
-        return IngoToZimbraRuleConverter.isConditionComplete(condition) && (IngoToZimbraRuleConverter.isSizeCondition(condition) ? IngoToZimbraRuleConverter.conditionHasSizeMatcher(condition) : !unsupportedMatchers.includes(condition.match));
+        return IngoToZimbraRuleConverter.isConditionComplete(condition) &&
+            (IngoToZimbraRuleConverter.isSizeCondition(condition)
+                ? IngoToZimbraRuleConverter.conditionHasSizeMatcher(condition)
+                : IngoToZimbraRuleConverter.conditionHasSupportedMatcher(condition));
     };
 
     static isConditionComplete(condition) {
@@ -35,6 +37,11 @@ class IngoToZimbraRuleConverter {
     static conditionHasSizeMatcher(condition) {
         const sizeMatchers = ['greater than', 'less than'];
         return sizeMatchers.includes(condition.match);
+    }
+
+    static conditionHasSupportedMatcher(condition) {
+        const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under', 'greater than'];
+        return !unsupportedMatchers.includes(condition.match);
     }
 
     static conditionSubject(condition) {
