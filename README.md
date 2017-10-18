@@ -1,4 +1,4 @@
-#ingo2zimbra
+# ingo2zimbra
 
 A node.js command line tool to convert Ingo message filter rules stored using
 the standard Horde preferences mechanism to Zimbra filter rules.
@@ -11,7 +11,7 @@ format.
 The output from the script can be piped to Zimbra's `zmprov` command line utility
 to import the converted rules into the target mailbox.
 
-##Installation
+## Installation
 
 Yarn is preferred
 
@@ -25,7 +25,7 @@ Or use NPM if desired
 npm install -g ingo2zimbra
 ```
 
-##Usage
+## Usage
 
 Basic usage information can be obtained by running:
 
@@ -128,7 +128,7 @@ afrl "Send social media stuff to my GMail" active all address "From" all contain
 afrl "Throw away some social media stuff locally" active all address "From" all contains "zorp" address "From" all matches "groupon"  discard  stop
 ```
 
-##Limitations
+## Limitations
 
 Some rules are not required or supported by Zimbra, or are not converted because
 they are not required in a Zimbra environment. Here is a brief list of unsupported
@@ -145,7 +145,7 @@ or omitted rules:
 * *Rules with invalid action configurations*: Ignored
 
 <a name="debugging"></a>
-##Debugging
+## Debugging
 
 If the output appears to be missing some rules which you expect in the script, you
 can check if the rules are being intentionally skipped due to the above limitations by
@@ -154,7 +154,7 @@ requesting debug output using the `-D` or `--debug` flags.
 This causes the command to write additional output preceded with a #, showing
 why certain rules are omitted, to the `stderr` stream.
 
-##Development
+## Development
 
 Pull requests are always welcome and appreciated. We only ask the following as a courtesy
 to make the PR easier to integrate:
@@ -175,7 +175,7 @@ To run the tests:
 yarn run test
 ```
 
-##How rules are processed
+## How rules are processed
 
 An in-depth speficication for how rules are processed, generated from the latest output
 from our Mocha test runner, is available on the Wiki page here:

@@ -123,7 +123,7 @@ class IngoToZimbraRuleConverter {
 
     configureCommandLineInterface() {
         // noinspection JSAnnotator
-        this.commandLineInterface.version('1.0.1')
+        this.commandLineInterface.version('1.0.2')
             .description("Read Horde / Ingo rules from the preferences database and write a script which can be piped to Zimbra's zmprov command.")
             .arguments('<mailbox>')
             .option('-H, --database-host <host>', 'Database host (default localhost)')
