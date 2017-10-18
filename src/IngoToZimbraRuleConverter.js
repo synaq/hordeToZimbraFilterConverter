@@ -21,8 +21,7 @@ class IngoToZimbraRuleConverter {
 
     static validConditionFilter(condition) {
         const unsupportedMatchers = ['regex', 'less', 'greater', 'less than or equal to', 'greater than or equal to', 'over', 'under', 'greater than'];
-        const sizeMatchers = ['greater than', 'less than'];
-        return IngoToZimbraRuleConverter.isConditionComplete(condition) && (IngoToZimbraRuleConverter.isSizeCondition(condition) ? sizeMatchers.includes(condition.match) : !unsupportedMatchers.includes(condition.match));
+        return IngoToZimbraRuleConverter.isConditionComplete(condition) && (IngoToZimbraRuleConverter.isSizeCondition(condition) ? IngoToZimbraRuleConverter.conditionHasSizeMatcher(condition) : !unsupportedMatchers.includes(condition.match));
     };
 
     static isConditionComplete(condition) {
@@ -31,6 +30,11 @@ class IngoToZimbraRuleConverter {
 
     static isSizeCondition(condition) {
         return (condition.field.toLowerCase() === 'size');
+    }
+
+    static conditionHasSizeMatcher(condition) {
+        const sizeMatchers = ['greater than', 'less than'];
+        return sizeMatchers.includes(condition.match);
     }
 
     static conditionSubject(condition) {
