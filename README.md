@@ -74,7 +74,7 @@ ingo2zimbra -u someUser -p SomePassword123$ foo@bar.com | zmprov
 ```
 
 ```
-sm 0718769860@mymtnmail.co.za
+sm foo@bar.com
 afrl "Send mail to my other mailbox" active all address "To" all contains "Some Alias"  redirect "bar@baz.com" stop
 afrl "Mail for another one of my other identities" active all address "To" all contains "Some Other Alias"  redirect "baz@baz.com" stop
 afrl "No big mail please" active all size over "1000K"  discard  stop
