@@ -64,6 +64,12 @@ describe('IngoToZimbraConverter', () => {
             expect(commandLineInterface.option).to.have.been.calledWith('-p, --database-password <password>', 'Database password');
         });
 
+        it('expects the no-exit flag', () => {
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable, JSAnnotator
+            expect(commandLineInterface.option).to.have.been.calledWith('-n, --no-exit', 'Suppress writing of exit statements');
+        });
+
         it('expects the debug flag', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable, JSAnnotator
@@ -104,7 +110,7 @@ describe('IngoToZimbraConverter', () => {
             databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: rules}]);
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
-            expect(rules.normalize).to.have.been.calledWith('NFKD');
+            expect(rules.normalize).to.have.been.calledWith('NFC');
         });
 
         it('fixes the incorrect string lengths in the rule string after normalizing it', () => {
@@ -128,6 +134,14 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(phpSerializer.unserialize).to.have.been.calledWith(rules);
         });
+
+        it('correctly calculates the lengths of unicode strings when passing them to the polyfill', () => {
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([{rules: 's:33:"String with multibyte character é";'}]);
+            phpSerializer.unserialize = sandbox.stub().returns(returnedRules);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(phpSerializer.unserialize).to.have.been.calledWith('s:34:"String with multibyte character é";');
+        });
     });
 
     context('when valid rules are returned', () => {
@@ -141,6 +155,13 @@ describe('IngoToZimbraConverter', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('exit\nexit\n');
+        });
+
+        it('omits the exist statements if the no-exit flag was specified', () => {
+            commandLineInterface.exit = false;
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.not.have.been.calledWith('exit\nexit\n');
         });
 
         it('makes sure that all rule names for the mailbox are unique', () => {
@@ -205,6 +226,56 @@ describe('IngoToZimbraConverter', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "Bullshit rule name \\\\" active all address "From" all is "bar@baz.com"  keep  \n');
+        });
+
+        it('properly escapes double quotes if they appear in condition values', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: '"bar@baz.com"'
+                        }
+                    ],
+                    name: 'Rule with bullshit value',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "Rule with bullshit value" active all address "From" all is "\\"bar@baz.com\\""  keep  \n');
+        });
+
+        it('does not blindly double escape double quotes if they are already escaped', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: '\\"bar@baz.com\\"'
+                        }
+                    ],
+                    name: 'Rule with bullshit value',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "Rule with bullshit value" active all address "From" all is "\\"bar@baz.com\\""  keep  \n');
         });
 
         it('translates action 1 to a keep rule', () => {
@@ -469,7 +540,7 @@ describe('IngoToZimbraConverter', () => {
             };
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
-            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active all address "From" all is "bar@baz.com"  keep  \n');
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@baz.com"  keep  \n');
         });
 
         it('ignores conditions with no field', () => {
@@ -592,6 +663,186 @@ describe('IngoToZimbraConverter', () => {
             expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-greater.com"  keep  \n');
         });
 
+        it('ignores unsupported "less than or equal to" conditions', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'less than or equal to',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-less-equal.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-less-equal.com"  keep  \n');
+        });
+
+        it('ignores unsupported "greater than or equal to" conditions', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'greater than or equal to',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-greater-equal.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-greater-equal.com"  keep  \n');
+        });
+
+        it('ignores unsupported "over" conditions', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'over',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-over.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-over.com"  keep  \n');
+        });
+
+        it('ignores unsupported "under" conditions', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'under',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-under.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-under.com"  keep  \n');
+        });
+
+        it('ignores unsupported "greater than" conditions on fields other than size', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'From',
+                            match: 'greater than',
+                            value: 'foo@foo.com'
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-greater-than-not-size.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-greater-than-not-size.com"  keep  \n');
+        });
+
+        it('ignores size conditions with no match value', () => {
+            returnedRules = [
+                {
+                    action: '1',
+                    'action-value': null,
+                    combine: '2',
+                    conditions: [
+                        {
+                            field: 'Size',
+                            match: 'greater than',
+                            value: ''
+                        },
+                        {
+                            field: 'From',
+                            match: 'is',
+                            value: 'bar@bar-invalid-size.com'
+                        }
+                    ],
+                    name: 'The Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "The Rule" active any address "From" all is "bar@bar-invalid-size.com"  keep  \n');
+        });
+
         it('remaps "begins with" matches to "contains"', () => {
             returnedRules = [
                 {
@@ -640,6 +891,56 @@ describe('IngoToZimbraConverter', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  contains "SOMETHING"  discard  \n');
+        });
+
+        it('remaps "not begins with" matches to "not_contains"', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'not begins with',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  not_contains "SOMETHING"  discard  \n');
+        });
+
+        it('remaps "not ends with" matches to "not_contains"', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'Subject',
+                            match: 'not ends with',
+                            value: 'SOMETHING'
+                        }
+                    ],
+                    name: 'A Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Rule" active all header "subject"  not_contains "SOMETHING"  discard  \n');
         });
 
         it('remaps "equal" matches to "is"', () => {
@@ -790,6 +1091,106 @@ describe('IngoToZimbraConverter', () => {
             converter.initialiseApplication();
             // noinspection JSUnresolvedVariable
             expect(process.stdout.write).to.have.been.calledWith('afrl "A Size Less Than Rule" active all size under "2M"  discard  \n');
+        });
+
+        it('translates size rules with lowercase modifyers into the correct Zimbra format', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'less than',
+                            value: '2mb'
+                        }
+                    ],
+                    name: 'A Lowercase Size Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Lowercase Size Rule" active all size under "2M"  discard  \n');
+        });
+
+        it('translates size rules with spaces into the correct Zimbra format', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'less than',
+                            value: '2 kb'
+                        }
+                    ],
+                    name: 'A Spaced Size Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Spaced Size Rule" active all size under "2K"  discard  \n');
+        });
+
+        it('translates size rules with known malformed sizes into the correct Zimbra format', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'greater than',
+                            value: '1mg'
+                        }
+                    ],
+                    name: 'A Malformed Size Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Malformed Size Rule" active all size over "1M"  discard  \n');
+        });
+
+        it('rounds up fractional size rules to the nearest full denominator', () => {
+            returnedRules = [
+                {
+                    action: '3',
+                    'action-value': null,
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'size',
+                            match: 'less than',
+                            value: '0.01'
+                        }
+                    ],
+                    name: 'A Spaced Size Rule',
+                    stop: null
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('afrl "A Spaced Size Rule" active all size under "1"  discard  \n');
         });
     });
 
@@ -946,6 +1347,54 @@ describe('IngoToZimbraConverter', () => {
             expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Copy To Path Rule" because it requires an action value but provided none');
         });
 
+        it('skips rules with action 4 which have no action value', () => {
+            returnedRules = [
+                {
+                    action: '4',
+                    'action-value': '',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'subject',
+                            match: 'contains',
+                            value: 'Something'
+                        }
+                    ],
+                    name: 'Some Redirect Rule'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Redirect Rule" because it requires an action value but provided none');
+        });
+
+        it('skips rules with action 11 which have no action value', () => {
+            returnedRules = [
+                {
+                    action: '11',
+                    'action-value': '',
+                    combine: '1',
+                    conditions: [
+                        {
+                            field: 'subject',
+                            match: 'contains',
+                            value: 'Something'
+                        }
+                    ],
+                    name: 'Some Keep And File Rule'
+                }
+            ];
+            phpSerializer.unserialize = () => {
+                return returnedRules;
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# Skipping rule "Some Keep And File Rule" because it requires an action value but provided none');
+        });
+
         it('skips flag rules as those are claimed to be supported by Zimbra documentation, but rejected in practice', () => {
             returnedRules = [
                 {
@@ -981,6 +1430,59 @@ describe('IngoToZimbraConverter', () => {
             // noinspection JSUnresolvedVariable
             expect(console.warn).to.have.been.calledWith('# No rules found for foo@bar.com');
         });
+
+        it('writes an exit statement so that the script would still terminate properly', () => {
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.have.been.calledWith('exit\n');
+        });
+
+        it('omits the exit statement if the no-exit flag was specified', () => {
+            commandLineInterface.exit = false;
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.not.have.been.calledWith('exit\n');
+        });
+    });
+
+    context('when no Ingo preferences data is found at all', () => {
+        it('logs the problem and skips the mailbox entirely', () => {
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(console.warn).to.have.been.calledWith('# No Ingo preferences found for foo@bar.com');
+        });
+
+        it('omits the exit statement if the no-exit flag was specified', () => {
+            commandLineInterface.exit = false;
+            databaseInstance.exec = sandbox.stub().returnsPromise().resolves([]);
+            converter.initialiseApplication();
+            // noinspection JSUnresolvedVariable
+            expect(process.stdout.write).to.not.have.been.calledWith('exit\n');
+        });
+
+        beforeEach(() => {
+            prepareStubs();
+
+            realStdErrorWrite = process.stderr.write;
+            process.stderr.write = sandbox.spy();
+            phpSerializer.unserialize = () => {
+                return [];
+            };
+        });
+
+        afterEach(() => {
+            resetStubs();
+            process.stderr.write = realStdErrorWrite;
+        });
+
+        let realStdErrorWrite;
     });
 
     const prepareStubs = () => {
@@ -1032,7 +1534,8 @@ describe('IngoToZimbraConverter', () => {
             databaseUser: 'somebody',
             databasePassword: 'somePassword',
             help: sandbox.stub(),
-            debug: true
+            debug: true,
+            exit: true
         };
         databaseInstance = {
             exec: sandbox.stub().returnsPromise().resolves([{rules: '{s:5:"Rules"}'}])
@@ -1048,14 +1551,15 @@ describe('IngoToZimbraConverter', () => {
         converter = new IngoToZimbraConverter(commandLineInterface, mySqlClient, phpSerializer);
     };
 
-    before(prepareStubs);
-
-    after(() => {
+    const resetStubs = function () {
         sandbox.reset();
         process.stdout.write = realStdoutWrite;
         console.warn = realConsoleWarn;
         process.exit = realExit;
-    });
+    };
+
+    beforeEach(prepareStubs);
+    afterEach(resetStubs);
 
     let realStdoutWrite = process.stdout.write;
     let realConsoleWarn = console.warn;

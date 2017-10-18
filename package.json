@@ -1,6 +1,6 @@
 {
   "name": "ingo2zimbra",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "Convert Horde / Ingo filter rules stored using the Horde preferences storage mechanism to a script which can be piped into the Zimbra zmprov command to allow importing of the rules.",
   "main": "index.js",
   "repository": "https://github.com/synaq/hordeToZimbraFilterConverter",
@@ -9,7 +9,8 @@
   "dependencies": {
     "commander": "^2.11.0",
     "nodejs-mysql": "^0.1.3",
-    "serialize-like-php": "^1.0.1"
+    "serialize-like-php": "^1.0.1",
+    "utf8-length": "^0.0.1"
   },
   "bin": {
     "ingo2zimbra": "./index.js"
